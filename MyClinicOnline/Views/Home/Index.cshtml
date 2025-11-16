@@ -1,8 +1,56 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+ViewData["Title"] = "Home";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+
+<div class="hero bg-light p-5 text-center">
+<h1 class="display-4 fw-bold">Find the Right Doctor Easily</h1>
+<p class="lead mt-3">Book appointments quickly and manage your health online.</p>
+<div class="mt-4">
+<a href="#search" class="btn btn-primary btn-lg mx-2">Find a Doctor</a>
+<a href="#register" class="btn btn-outline-primary btn-lg mx-2">Register as Doctor</a>
 </div>
+</div>
+
+
+<section id="search" class="container my-5">
+<h2 class="text-center mb-4">Search for Specialists</h2>
+<form class="row g-3 justify-content-center">
+<div class="col-md-4">
+<input type="text" class="form-control form-control-lg" placeholder="Specialty (e.g. Cardiologist)">
+</div>
+<div class="col-md-4">
+<input type="text" class="form-control form-control-lg" placeholder="City / Region">
+</div>
+<div class="col-md-2 d-grid">
+<button class="btn btn-primary btn-lg">Search</button>
+</div>
+</form>
+</section>
+
+
+<section class="features bg-light py-5">
+<div class="container">
+<h2 class="text-center mb-5">Why Choose Us?</h2>
+<div class="row text-center">
+<div class="col-md-4 mb-4">
+<h4>Easy Booking</h4>
+<p>Book appointments with just a few clicks.</p>
+</div>
+<div class="col-md-4 mb-4">
+<h4>Top Specialists</h4>
+<p>Find reliable doctors with verified profiles.</p>
+</div>
+<div class="col-md-4 mb-4">
+<h4>Online Consultations</h4>
+<p>Connect with doctors remotely from anywhere.</p>
+</div>
+</div>
+</div>
+</section>
+
+
+<section class="cta text-center p-5">
+<h2 class="fw-bold">Ready to Take Control of Your Health?</h2>
+<a href="#search" class="btn btn-primary btn-lg mt-3">Book Now</a>
+</section>

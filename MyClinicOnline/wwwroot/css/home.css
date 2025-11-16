@@ -1,0 +1,110 @@
+﻿/* Custom CSS for Home Page */
+
+/* Hero Section */
+.hero {
+    background: linear-gradient(135deg, #4ea1ff, #0066cc);
+    color: white;
+    padding: 100px 20px;
+    border-radius: 0 0 40px 40px;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+}
+
+.hero h1 {
+    font-size: 3rem;
+    font-weight: 800;
+}
+
+.hero p {
+    font-size: 1.25rem;
+    opacity: 0.9;
+}
+
+.hero .btn {
+    padding: 12px 30px;
+    font-size: 1.1rem;
+    border-radius: 12px;
+    transition: 0.3s;
+}
+
+.hero .btn-primary:hover {
+    background-color: #004c99;
+    transform: translateY(-3px);
+}
+
+.hero .btn-outline-primary {
+    border-color: white;
+    color: white;
+}
+
+.hero .btn-outline-primary:hover {
+    background-color: rgba(255,255,255,0.2);
+    transform: translateY(-3px);
+}
+
+/* Search Section */
+#search input {
+    height: 55px;
+    font-size: 1.1rem;
+    border-radius: 12px;
+    border: 2px solid #d6e6f7;
+    transition: 0.3s;
+}
+
+#search input:focus {
+    border-color: #4ea1ff;
+    box-shadow: 0 0 5px rgba(78,161,255,0.4);
+}
+
+#search button {
+    height: 55px;
+    font-size: 1.1rem;
+    border-radius: 12px;
+}
+
+/* Features Section */
+.features {
+    background: #f8fbff;
+}
+
+.features h4 {
+    font-weight: 700;
+    margin-bottom: 10px;
+}
+
+.features p {
+    color: #555;
+}
+
+.features .col-md-4 {
+    padding: 20px;
+    border-radius: 16px;
+    transition: 0.3s;
+}
+
+.features .col-md-4:hover {
+    background: white;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.08);
+    transform: translateY(-5px);
+}
+
+/* CTA Section */
+.cta {
+    background: #e8f2ff;
+    border-radius: 20px;
+    margin: 60px auto;
+}
+
+.cta h2 {
+    font-size: 2rem;
+    font-weight: 700;
+}
+
+/* Responsive */
+@media(max-width: 768px) {
+    .hero h1 {
+        font-size: 2.3rem;
+    }
+    .hero p {
+        font-size: 1.1rem;
+    }
+}

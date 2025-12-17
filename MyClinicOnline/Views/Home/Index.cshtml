@@ -15,15 +15,31 @@
 <section id="search" class="container my-5">
     <h2 class="text-center mb-4">Search for Specialists</h2>
 
-    <form class="row g-3 justify-content-center">
+    <!-- 🔍 SEARCH FORM -->
+    <form asp-controller="Doctors"
+          asp-action="Search"
+          method="get"
+          class="row g-3 justify-content-center">
+
         <div class="col-md-4">
-            <input type="text" class="form-control" placeholder="Specialty (e.g. Cardiologist)">
+            <input type="text"
+                   name="specialty"
+                   class="form-control"
+                   placeholder="Specialty (e.g. Cardiologist)"
+                   required />
         </div>
+
         <div class="col-md-4">
-            <input type="text" class="form-control" placeholder="City / Region">
+            <input type="text"
+                   name="city"
+                   class="form-control"
+                   placeholder="City / Region" />
         </div>
+
         <div class="col-md-2 d-grid">
-            <button class="btn btn-primary">Search</button>
+            <button type="submit" class="btn btn-primary">
+                Search
+            </button>
         </div>
     </form>
 </section>

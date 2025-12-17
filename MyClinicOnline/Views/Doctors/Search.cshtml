@@ -1,0 +1,24 @@
+﻿@model IEnumerable<MyClinicOnline.Models.Doctor>
+
+<h2>Doctors with specialty: "@ViewBag.Specialty"</h2>
+
+@if (!Model.Any())
+{
+    <p>No doctors found for this specialty.</p>
+}
+else
+{
+    <ul>
+        @foreach (var doctor in Model)
+        {
+            <li>
+                <strong>@doctor.FullName</strong><br />
+                Specialty:
+                @string.Join(", ",
+        doctor.Specialties.Select(s => s.Specialty.Name))<br />
+                Works with NHIF:
+                @(doctor.WorksWithNhif ? "Yes" : "No")
+            </li>
+        }
+    </ul>
+}

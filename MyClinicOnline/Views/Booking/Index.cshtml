@@ -1,0 +1,47 @@
+﻿@model MyClinicOnline.Controllers.BookingSearchVm
+
+@{
+    ViewData["Title"] = "Book Appointment";
+}
+
+<div class="container my-5">
+    <div class="text-center mb-4">
+        <h1 class="fw-bold">Book an Appointment</h1>
+        <p class="text-muted fs-5">Choose specialty and city to find available doctors.</p>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body p-4">
+            <form asp-controller="Booking" asp-action="Search" method="get" class="row g-3">
+
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Type of practice (Specialty)</label>
+                    <select name="specialtyId" class="form-select" required>
+                        <option value="">-- Select specialty --</option>
+                        @foreach (var s in Model.Specialties)
+                        {
+                            <option value="@s.Id">@s.Name</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">City / Region</label>
+                    <select name="cityId" class="form-select" required>
+                        <option value="">-- Select city --</option>
+                        @foreach (var c in Model.Cities)
+                        {
+                            <option value="@c.Id">@c.Name</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="col-12 d-grid mt-2">
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        Search
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

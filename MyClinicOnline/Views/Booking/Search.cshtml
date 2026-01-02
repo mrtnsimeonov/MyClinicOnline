@@ -1,0 +1,50 @@
+﻿@model IEnumerable<MyClinicOnline.Models.Doctor>
+
+@{
+    ViewData["Title"] = "Available Doctors";
+}
+
+<div class="container my-5">
+    <div class="mb-4">
+        <h2 class="fw-bold">Available Doctors</h2>
+        <p class="text-muted">
+            Specialty: <strong>@ViewBag.Specialty</strong> |
+            City: <strong>@ViewBag.City</strong>
+        </p>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-warning">
+            No doctors found for this specialty and city.
+        </div>
+    }
+    else
+    {
+        <div class="row g-3">
+            @foreach (var d in Model)
+            {
+                <div class="col-md-6">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-body">
+                            <h5 class="card-title fw-bold">@d.FullName</h5>
+
+                            <p class="mb-1"><strong>City:</strong> @d.City?.Name</p>
+                            <p class="mb-1"><strong>NHIF:</strong> @(d.WorksWithNhif ? "Yes" : "No")</p>
+
+                            <p class="mb-3">
+                                <strong>Specialties:</strong>
+                                @string.Join(", ", d.Specialties.Select(x => x.Specialty.Name))
+                            </p>
+
+                            <!-- Calendar step comes next -->
+                            <a class="btn btn-outline-primary disabled" href="#">
+                                Book now / Запази час (next step)
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>

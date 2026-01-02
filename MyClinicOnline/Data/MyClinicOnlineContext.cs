@@ -11,6 +11,7 @@ namespace MyClinicOnline.Data
         public DbSet<User> Users { get; set; }
         public DbSet<Doctor> Doctors { get; set; }
         public DbSet<Clinic> Clinics { get; set; }
+        public DbSet<City> Cities { get; set; }
         public DbSet<Specialty> Specialties { get; set; }
         public DbSet<DoctorSpecialty> DoctorSpecialties { get; set; }
         public DbSet<TimeSlot> TimeSlots { get; set; }

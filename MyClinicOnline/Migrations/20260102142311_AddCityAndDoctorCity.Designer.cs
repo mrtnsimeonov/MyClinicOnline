@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using MyClinicOnline.Data;
 
@@ -11,9 +12,11 @@ using MyClinicOnline.Data;
 namespace MyClinicOnline.Migrations
 {
     [DbContext(typeof(MyClinicOnlineContext))]
-    partial class MyClinicOnlineContextModelSnapshot : ModelSnapshot
+    [Migration("20260102142311_AddCityAndDoctorCity")]
+    partial class AddCityAndDoctorCity
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -55,7 +58,7 @@ namespace MyClinicOnline.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Appointments", (string)null);
+                    b.ToTable("Appointments");
                 });
 
             modelBuilder.Entity("MyClinicOnline.Models.City", b =>
@@ -72,7 +75,7 @@ namespace MyClinicOnline.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Cities", (string)null);
+                    b.ToTable("Cities");
                 });
 
             modelBuilder.Entity("MyClinicOnline.Models.Clinic", b =>
@@ -89,7 +92,7 @@ namespace MyClinicOnline.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Clinics", (string)null);
+                    b.ToTable("Clinics");
                 });
 
             modelBuilder.Entity("MyClinicOnline.Models.Doctor", b =>
@@ -114,7 +117,7 @@ namespace MyClinicOnline.Migrations
 
                     b.HasIndex("CityId");
 
-                    b.ToTable("Doctors", (string)null);
+                    b.ToTable("Doctors");
                 });
 
             modelBuilder.Entity("MyClinicOnline.Models.DoctorSpecialty", b =>
@@ -129,7 +132,7 @@ namespace MyClinicOnline.Migrations
 
                     b.HasIndex("SpecialtyId");
 
-                    b.ToTable("DoctorSpecialties", (string)null);
+                    b.ToTable("DoctorSpecialties");
                 });
 
             modelBuilder.Entity("MyClinicOnline.Models.Specialty", b =>
@@ -146,7 +149,7 @@ namespace MyClinicOnline.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Specialties", (string)null);
+                    b.ToTable("Specialties");
                 });
 
             modelBuilder.Entity("MyClinicOnline.Models.TimeSlot", b =>
@@ -173,7 +176,7 @@ namespace MyClinicOnline.Migrations
 
                     b.HasIndex("DoctorId");
 
-                    b.ToTable("TimeSlots", (string)null);
+                    b.ToTable("TimeSlots");
                 });
 
             modelBuilder.Entity("MyClinicOnline.Models.User", b =>
@@ -194,7 +197,7 @@ namespace MyClinicOnline.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Users", (string)null);
+                    b.ToTable("Users");
                 });
 
             modelBuilder.Entity("MyClinicOnline.Models.Appointment", b =>

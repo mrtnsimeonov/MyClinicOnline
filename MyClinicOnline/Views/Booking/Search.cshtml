@@ -38,9 +38,13 @@
                             </p>
 
                             <!-- Calendar step comes next -->
-                            <a class="btn btn-outline-primary disabled" href="#">
-                                Book now / Запази час (next step)
+                            <a class="btn btn-outline-primary"
+                               asp-controller="Calendar"
+                               asp-action="Index"
+                               asp-route-doctorId="@d.Id">
+                                Book now / Запази час
                             </a>
+
                         </div>
                     </div>
                 </div>

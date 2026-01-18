@@ -91,5 +91,6 @@ namespace MyClinicOnline.Controllers
             }
             catch { /* Логване на грешка */ }
         }
+
     }
 }

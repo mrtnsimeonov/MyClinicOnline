@@ -1,0 +1,18 @@
+﻿<div class="container mt-5" style="max-width: 400px;">
+    <h2>Вход</h2>
+    <form asp-action="Login" method="post">
+        <div class="mb-3">
+            <label>Имейл</label>
+            <input type="email" name="email" class="form-control" required />
+        </div>
+        <div class="mb-3">
+            <label>Парола</label>
+            <input type="password" name="password" class="form-control" required />
+        </div>
+        <button type="submit" class="btn btn-primary w-100">Влез</button>
+        @if (ViewBag.Error != null)
+        {
+            <p class="text-danger mt-2">@ViewBag.Error</p>
+        }
+    </form>
+</div>

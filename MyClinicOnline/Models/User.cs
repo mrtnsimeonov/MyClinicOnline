@@ -1,4 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace MyClinicOnline.Models
 {
@@ -7,9 +9,28 @@ namespace MyClinicOnline.Models
         public int Id { get; set; }
 
         [Required]
-        public string FullName { get; set; }
+        public string FirstName { get; set; }
 
+        [Required]
+        public string LastName { get; set; }
+
+        [Required]
         public string Email { get; set; }
+
+        [Required]
+        public string Password { get; set; } // В реален проект тук се съхранява Hash
+
+        [Required]
+        public string Phone { get; set; }
+
+        [Required]
+        public string Region { get; set; }
+
+        [Required]
+        public DateTime DateOfBirth { get; set; }
+
+        [Required]
+        public string Gender { get; set; }
 
         public List<Appointment> Appointments { get; set; } = new();
     }

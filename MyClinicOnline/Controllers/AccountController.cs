@@ -75,21 +75,40 @@ namespace MyClinicOnline.Controllers
         {
             try
             {
-                var mail = new MailMessage();
-                var smtpServer = new SmtpClient("smtp.office365.com");
+                // Имейлът трябва да е същият като на снимката ти
+                var fromAddress = new MailAddress("MyClinicOnline@outlook.com", "MyClinicOnline");
+                var toAddress = new MailAddress(toEmail);
 
-                mail.From = new MailAddress("MyClinicOnline@outlook.com");
-                mail.To.Add(toEmail);
-                mail.Subject = "Успешно регистриране в MyClinicOnline";
-                mail.Body = "Успешно регистриране в MyClinicOnline";
+                // ТУК ПОСТАВИ 16-СИМВОЛНИЯ КОД (без интервали)
+                const string fromPassword = "ifkzlrwcyrvouehv";
 
-                smtpServer.Port = 587;
-                smtpServer.Credentials = new NetworkCredential("MyClinicOnline@outlook.com", "ВАШАТА_ПАРОЛА");
-                smtpServer.EnableSsl = true;
+                const string subject = "Успешно регистриране в MyClinicOnline";
+                const string body = "Успешно регистриране в MyClinicOnline";
 
-                smtpServer.Send(mail);
+                var smtp = new SmtpClient
+                {
+                    Host = "smtp-mail.outlook.com",
+                    Port = 587,
+                    EnableSsl = true,
+                    DeliveryMethod = SmtpDeliveryMethod.Network,
+                    UseDefaultCredentials = false,
+                    Credentials = new NetworkCredential(fromAddress.Address, fromPassword)
+                };
+
+                using (var message = new MailMessage(fromAddress, toAddress)
+                {
+                    Subject = subject,
+                    Body = body
+                })
+                {
+                    smtp.Send(message);
+                }
             }
-            catch { /* Логване на грешка */ }
+            catch (Exception ex)
+            {
+                // Ако има грешка, ще я видиш в прозореца "Output" на Visual Studio
+                System.Diagnostics.Debug.WriteLine("Email Error: " + ex.Message);
+            }
         }
 
     }

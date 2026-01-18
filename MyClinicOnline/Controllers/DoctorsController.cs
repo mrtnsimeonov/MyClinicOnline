@@ -13,21 +13,21 @@ namespace MyClinicOnline.Controllers
             _context = context;
         }
 
-        // GET: /Doctors/Search?specialty=Cardiology
-        public IActionResult Search(string specialty)
+        // Добавяме async Task<IActionResult>
+        public async Task<IActionResult> Search(string specialty)
         {
             if (string.IsNullOrWhiteSpace(specialty))
             {
                 return View(new List<Models.Doctor>());
             }
 
-            var doctors = _context.Doctors
+            var doctors = await _context.Doctors
                 .Include(d => d.Specialties)
                     .ThenInclude(ds => ds.Specialty)
                 .Where(d =>
                     d.Specialties.Any(ds =>
                         ds.Specialty.Name.Contains(specialty)))
-                .ToList();
+                .ToListAsync();
 
             ViewBag.Specialty = specialty;
             return View(doctors);

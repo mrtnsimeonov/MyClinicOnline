@@ -1,0 +1,87 @@
+﻿@model MyClinicOnline.Models.RegisterViewModel
+
+<div class="container mt-4" style="max-width: 500px;">
+    <h3>Регистрация</h3>
+    <form asp-action="Register" method="post">
+        <div class="mb-2">
+            <label>Име</label>
+            <input asp-for="FirstName" class="form-control" />
+            <span asp-validation-for="FirstName" class="text-danger"></span>
+        </div>
+        <div class="mb-2">
+            <label>Фамилия</label>
+            <input asp-for="LastName" class="form-control" />
+            <span asp-validation-for="LastName" class="text-danger"></span>
+        </div>
+        <div class="mb-2">
+            <label>Телефон</label>
+            <input asp-for="Phone" class="form-control" />
+        </div>
+        <div class="mb-2">
+            <label>Област</label>
+            <select asp-for="Region" class="form-control" required>
+                <option value="">-- Изберете област --</option>
+                <option value="Благоевград">област Благоевград</option>
+                <option value="Бургас">област Бургас</option>
+                <option value="Варна">област Варна</option>
+                <option value="Велико Търново">област Велико Търново</option>
+                <option value="Видин">област Видин</option>
+                <option value="Враца">област Враца</option>
+                <option value="Габрово">област Габрово</option>
+                <option value="Добрич">област Добрич</option>
+                <option value="Кърджали">област Кърджали</option>
+                <option value="Кюстендил">област Кюстендил</option>
+                <option value="Ловеч">област Ловеч</option>
+                <option value="Монтана">област Монтана</option>
+                <option value="Пазарджик">област Пазарджик</option>
+                <option value="Перник">област Перник</option>
+                <option value="Плевен">област Плевен</option>
+                <option value="Пловдив">област Пловдив</option>
+                <option value="Разград">област Разград</option>
+                <option value="Русе">област Русе</option>
+                <option value="Силистра">област Силистра</option>
+                <option value="Сливен">област Сливен</option>
+                <option value="Смолян">област Смолян</option>
+                <option value="Софийска област">софийска област</option>
+                <option value="София">област София</option>
+                <option value="Стара Загора">област Стара Загора</option>
+                <option value="Търговище">област Търговище</option>
+                <option value="Хасково">област Хасково</option>
+                <option value="Шумен">област Шумен</option>
+                <option value="Ямбол">област Ямбол</option>
+            </select>
+        </div>
+        <div class="mb-2">
+            <label>Дата на раждане</label>
+            <input asp-for="DateOfBirth" type="date" class="form-control" />
+            <span asp-validation-for="DateOfBirth" class="text-danger"></span>
+        </div>
+        <div class="mb-2">
+            <label>Пол</label>
+            <select asp-for="Gender" class="form-control">
+                <option value="Мъж">Мъж</option>
+                <option value="Жена">Жена</option>
+            </select>
+        </div>
+        <div class="mb-2">
+            <label>Имейл</label>
+            <input asp-for="Email" class="form-control" />
+        </div>
+        <div class="mb-2">
+            <label>Парола</label>
+            <div class="input-group">
+                <input asp-for="Password" type="password" class="form-control" id="passInput" />
+                <button type="button" class="btn btn-outline-secondary" onclick="togglePass()">👁️</button>
+            </div>
+            <span asp-validation-for="Password" class="text-danger"></span>
+        </div>
+        <button type="submit" class="btn btn-success w-100 mt-3">Регистрирай ме</button>
+    </form>
+</div>
+
+<script>
+    function togglePass() {
+        var x = document.getElementById("passInput");
+        x.type = x.type === "password" ? "text" : "password";
+    }
+</script>

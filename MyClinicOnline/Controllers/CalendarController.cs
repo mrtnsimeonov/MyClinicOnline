@@ -64,9 +64,9 @@ namespace MyClinicOnline.Controllers
         }
 
         [HttpPost]
-        public IActionResult Book(int slotId)
+        public async Task<IActionResult> Book(int slotId)
         {
-            var slot = _context.TimeSlots.FirstOrDefault(s => s.Id == slotId);
+            var slot = await _context.TimeSlots.FirstOrDefaultAsync(s => s.Id == slotId);
             if (slot == null) return NotFound();
 
             if (slot.IsBooked)
@@ -76,7 +76,7 @@ namespace MyClinicOnline.Controllers
             }
 
             slot.IsBooked = true;
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
 
             TempData["Success"] = "Booked successfully!";
             return RedirectToAction("Index", new { doctorId = slot.DoctorId, year = slot.StartTime.Year, month = slot.StartTime.Month });

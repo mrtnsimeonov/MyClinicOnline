@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using MyClinicOnline.Data;
 using MyClinicOnline.Models;
 using System.Net;
@@ -95,9 +96,9 @@ namespace MyClinicOnline.Controllers
         public IActionResult Login() => View();
 
         [HttpPost]
-        public IActionResult Login(string email, string password)
+        public async Task<IActionResult> Login(string email, string password)
         {
-            var user = _context.Users.FirstOrDefault(u => u.Email == email && u.Password == password);
+            var user = _context.Users.FirstOrDefaultAsync(u => u.Email == email && u.Password == password);
             if (user != null)
             {
                 return RedirectToAction("Index", "Home");

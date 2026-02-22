@@ -1,24 +1,118 @@
 ﻿@model IEnumerable<MyClinicOnline.Models.Doctor>
 
-<h2>Doctors with specialty: "@ViewBag.Specialty"</h2>
+@{
+    ViewData["Title"] = "Search Results";
+}
 
-@if (!Model.Any())
-{
-    <p>No doctors found for this specialty.</p>
-}
-else
-{
-    <ul>
-        @foreach (var doctor in Model)
+<div class="container py-5" style="background-color: #fcfcfd; min-height: 100vh;">
+    <div class="d-flex justify-content-between align-items-end mb-5">
+        <div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-2">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index" class="text-decoration-none text-muted">Home</a></li>
+                    <li class="breadcrumb-item active text-primary fw-bold">Search Results</li>
+                </ol>
+            </nav>
+            <h1 class="fw-bold text-dark display-6">Available Specialists</h1>
+            <p class="text-muted fs-5">Showing results for <span class="text-primary fw-bold">"@ViewBag.Specialty"</span></p>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        @if (!Model.Any())
         {
-            <li>
-                <strong>@doctor.FullName</strong><br />
-                Specialty:
-                @string.Join(", ",
-        doctor.Specialties.Select(s => s.Specialty.Name))<br />
-                Works with NHIF:
-                @(doctor.WorksWithNhif ? "Yes" : "No")
-            </li>
+            <div class="col-12 text-center py-5">
+                <i class="bi bi-search text-muted display-1 mb-4"></i>
+                <h3>No doctors found</h3>
+                <p class="text-muted">Try adjusting your search filters or specialty.</p>
+                <a asp-controller="Home" asp-action="Index" class="btn btn-primary mt-3">Back to Home</a>
+            </div>
         }
-    </ul>
-}
+        else
+        {
+            @foreach (var doctor in Model)
+            {
+                <div class="col-12">
+                    <div class="card border-0 shadow-sm rounded-4 overflow-hidden result-card transition-all">
+                        <div class="card-body p-4">
+                            <div class="row align-items-center">
+                                <div class="col-auto">
+                                    <div class="bg-primary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center" style="width: 90px; height: 90px;">
+                                        <i class="bi bi-person-fill text-primary" style="font-size: 3rem;"></i>
+                                    </div>
+                                </div>
+
+                                <div class="col px-md-4">
+                                    <div class="d-flex align-items-center mb-1">
+                                        <h3 class="fw-bold mb-0 me-3 text-dark">@doctor.FullName</h3>
+
+                                        @if (doctor.WorksWithNhif)
+                                        {
+                                            <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 rounded-pill px-3 py-2">
+                                                <i class="bi bi-check-circle-fill me-1"></i> Works with NHIF
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-25 rounded-pill px-3 py-2">
+                                                Private Practice
+                                            </span>
+                                        }
+                                    </div>
+
+                                    <p class="text-primary fw-bold mb-3 fs-5">
+                                        @string.Join(", ", doctor.Specialties.Select(s => s.Specialty.Name))
+                                    </p>
+
+                                    <div class="d-flex flex-wrap gap-4 text-muted">
+                                        <span class="d-flex align-items-center"><i class="bi bi-geo-alt-fill text-danger me-2"></i> @(doctor.City?.Name ?? "N/A")</span>
+                                        <span class="d-flex align-items-center"><i class="bi bi-star-fill text-warning me-2"></i> 4.9 Rating</span>
+                                        <span class="d-flex align-items-center"><i class="bi bi-clock-fill text-primary me-2"></i> Available Today</span>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-3 text-md-end mt-4 mt-md-0 border-start ps-md-4">
+                                    <div class="d-grid gap-2">
+                                        <a asp-controller="Booking" asp-action="Create" asp-route-doctorId="@doctor.Id" class="btn btn-primary fw-bold py-3 rounded-3 shadow-sm">
+                                            Book Appointment
+                                        </a>
+                                        <a asp-action="Details" asp-route-id="@doctor.Id" class="btn btn-outline-light text-dark border py-2 rounded-3">
+                                            View Full Profile
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+    </div>
+</div>
+
+<style>
+    body {
+        background-color: #fcfcfd;
+    }
+
+    .result-card {
+        border: 1px solid #eef0f2 !important;
+        background: #ffffff;
+        transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s ease;
+    }
+
+        .result-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08) !important;
+            border-color: #0066FF !important;
+        }
+
+    .bg-opacity-10 {
+        --bs-bg-opacity: 0.1;
+    }
+
+    .breadcrumb-item + .breadcrumb-item::before {
+        content: "•";
+        color: #dee2e6;
+    }
+</style>

@@ -2,18 +2,21 @@
 using Microsoft.EntityFrameworkCore;
 using MyClinicOnline.Data;
 using MyClinicOnline.Models;
-using System.Net;
-using System.Net.Mail;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication;
+using MyClinicOnline.Services;
 
 namespace MyClinicOnline.Controllers
 {
     public class AccountController : Controller
     {
         private readonly MyClinicOnlineContext _context;
+        private readonly IEmailService _emailService;
 
-        public AccountController(MyClinicOnlineContext context)
+        public AccountController(MyClinicOnlineContext context, IEmailService emailService)
         {
             _context = context;
+            _emailService = emailService;
         }
 
         [HttpGet]
@@ -38,57 +41,49 @@ namespace MyClinicOnline.Controllers
                         Gender = model.Gender
                     };
 
-                    // Inside [HttpPost] Register (for Patients)
                     _context.Users.Add(user);
                     await _context.SaveChangesAsync();
 
-                    // UPDATE THIS LINE:
-                    await SendEmailAsync(user.Email, "Успешно регистриране в MyClinicOnline", "Здравейте, успешно се регистрирахте в MyClinicOnline!");
+                    await _emailService.SendEmailAsync(user.Email, "Успешно регистриране в MyClinicOnline", "Здравейте, успешно се регистрирахте в MyClinicOnline!");
 
                     return RedirectToAction("Login");
                 }
                 catch (Exception ex)
                 {
-                    // Показва грешката директно в браузъра за лесно дебъгване
                     return Content($"Грешка: {ex.Message} --- {ex.InnerException?.Message}");
                 }
             }
             return View(model);
         }
-        // GET: /Account/RegisterDoctor
+
         [HttpGet]
         public async Task<IActionResult> RegisterDoctor()
         {
-            // 1. Fetch Cities and Specialties to populate the dropdown and checkboxes
             ViewBag.Cities = await _context.Cities.OrderBy(c => c.Name).ToListAsync();
             ViewBag.Specialties = await _context.Specialties.OrderBy(s => s.Name).ToListAsync();
-
             return View();
         }
 
-        // POST: /Account/RegisterDoctor
         [HttpPost]
-        [ValidateAntiForgeryToken] // Recommended for security
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> RegisterDoctor(RegisterDoctorViewModel model)
         {
             if (ModelState.IsValid)
             {
                 try
                 {
-                    // 1. Map ViewModel to Doctor Model
                     var doctor = new Doctor
                     {
                         FullName = model.FullName,
                         Email = model.Email,
+                        Password = model.Password,
                         WorksWithNhif = model.WorksWithNhif,
                         CityId = model.CityId
                     };
 
-                    // 2. Add and Save Doctor first (this generates the Doctor.Id)
                     _context.Doctors.Add(doctor);
                     await _context.SaveChangesAsync();
 
-                    // 3. Handle Many-to-Many Specialties
                     if (model.SelectedSpecialtyIds != null && model.SelectedSpecialtyIds.Any())
                     {
                         foreach (var specId in model.SelectedSpecialtyIds)
@@ -100,71 +95,27 @@ namespace MyClinicOnline.Controllers
                             };
                             _context.DoctorSpecialties.Add(doctorSpecialty);
                         }
-
-                        // Save the entries in the join table
                         await _context.SaveChangesAsync();
                     }
 
-                    // 4. Send Confirmation Email using the updated flexible method
                     string subject = "Successfully Registered - MyClinicOnline";
-                    string body = $@"Dear Dr. {doctor.FullName}, 
-                             Thank you for joining our platform. 
-                             Patients can now find and book appointments with you in your city.";
+                    string body = $@"Dear Dr. {doctor.FullName},
+Thank you for joining our platform.
+Patients can now find and book appointments with you in your city.";
 
-                    await SendEmailAsync(doctor.Email, subject, body);
-
-                    // 5. Redirect to Home on success
+                    await _emailService.SendEmailAsync(doctor.Email, subject, body);
                     return RedirectToAction("Index", "Home");
                 }
                 catch (Exception ex)
                 {
-                    // Log the error (optional) and show a friendly message
                     ModelState.AddModelError("", "An error occurred while saving. Please try again.");
                     System.Diagnostics.Debug.WriteLine("Registration Error: " + ex.Message);
                 }
             }
 
-            // If we reach here, something failed (Validation or Exception)
-            // We must reload the ViewBag data so the form doesn't crash
             ViewBag.Cities = await _context.Cities.OrderBy(c => c.Name).ToListAsync();
             ViewBag.Specialties = await _context.Specialties.OrderBy(s => s.Name).ToListAsync();
-
             return View(model);
-        }
-
-        // Метод за изпращане на имейл (използваме твоя генериран App Password)
-        private async Task SendEmailAsync(string toEmail, string subject, string body)
-        {
-            try
-            {
-                var fromAddress = new MailAddress("maartin.simeonov@gmail.com", "MyClinicOnline");
-                var toAddress = new MailAddress(toEmail);
-                const string fromPassword = "rkgrophwmddyftza";
-
-                var smtp = new SmtpClient
-                {
-                    Host = "smtp.gmail.com",
-                    Port = 587,
-                    EnableSsl = true,
-                    DeliveryMethod = SmtpDeliveryMethod.Network,
-                    UseDefaultCredentials = false,
-                    Credentials = new NetworkCredential(fromAddress.Address, fromPassword)
-                };
-
-                using (var message = new MailMessage(fromAddress, toAddress)
-                {
-                    Subject = subject,
-                    Body = body
-                })
-                {
-                    await smtp.SendMailAsync(message);
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine("Email Error: " + ex.Message);
-                // We don't want to crash the whole registration if the email fails
-            }
         }
 
         [HttpGet]
@@ -173,13 +124,48 @@ namespace MyClinicOnline.Controllers
         [HttpPost]
         public async Task<IActionResult> Login(string email, string password)
         {
-            var user = _context.Users.FirstOrDefaultAsync(u => u.Email == email && u.Password == password);
-            if (user != null)
+            var patient = await _context.Users.FirstOrDefaultAsync(u => u.Email == email && u.Password == password);
+            if (patient != null)
             {
+                string initials = $"{patient.FirstName[0]}{patient.LastName[0]}".ToUpper();
+                await SignInUser(patient.Email, initials, "Patient", patient.Id);
                 return RedirectToAction("Index", "Home");
             }
+
+            var doctor = await _context.Doctors.FirstOrDefaultAsync(d => d.Email == email && d.Password == password);
+            if (doctor != null)
+            {
+                var names = doctor.FullName.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                string initials = names.Length > 1 ? $"{names[0][0]}{names[1][0]}" : $"{names[0][0]}";
+
+                await SignInUser(doctor.Email, initials.ToUpper(), "Doctor", doctor.Id);
+                return RedirectToAction("Index", "Home");
+            }
+
             ViewBag.Error = "Грешен имейл или парола";
             return View();
+        }
+
+        private async Task SignInUser(string email, string initials, string role, int id)
+        {
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.Name, email),
+                new Claim(ClaimTypes.Role, role),
+                new Claim("Initials", initials),
+                new Claim("UserId", id.ToString())
+            };
+
+            var identity = new ClaimsIdentity(claims, "MyCookieAuth");
+            var principal = new ClaimsPrincipal(identity);
+
+            await HttpContext.SignInAsync("MyCookieAuth", principal);
+        }
+
+        public async Task<IActionResult> Logout()
+        {
+            await HttpContext.SignOutAsync("MyCookieAuth");
+            return RedirectToAction("Index", "Home");
         }
     }
 }

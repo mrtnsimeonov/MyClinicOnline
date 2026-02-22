@@ -1,4 +1,11 @@
-﻿<div class="container mt-5" style="max-width: 400px;">
+﻿@if (TempData["LoginMessage"] != null)
+{
+    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+        <strong>Внимание!</strong> @TempData["LoginMessage"]
+        <button type="button" class="btn-close" data-bs-toggle="alert" aria-label="Close"></button>
+    </div>
+}
+<div class="container mt-5" style="max-width: 400px;">
     <h2>Вход</h2>
     <form asp-action="Login" method="post">
         <div class="mb-3">

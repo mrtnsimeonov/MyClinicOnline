@@ -39,8 +39,30 @@
                     </ul>
 
                     <div class="d-flex align-items-center">
-                        <a class="btn btn-outline-primary me-2 px-4 fw-bold rounded-pill" asp-controller="Account" asp-action="Login">Вход</a>
-                        <a class="btn btn-primary px-4 shadow-sm fw-bold rounded-pill" asp-controller="Account" asp-action="Register">Регистрация</a>
+                        @if (User.Identity.IsAuthenticated)
+                        {
+                            var initials = User.FindFirst("Initials")?.Value;
+                            var isDoctor = User.IsInRole("Doctor");
+
+                            <div class="dropdown">
+                                <button class="btn btn-outline-primary rounded-circle fw-bold dropdown-toggle d-flex justify-content-center align-items-center" type="button" id="userMenu" data-bs-toggle="dropdown" aria-expanded="false" style="width: 45px; height: 45px;">
+                                    @initials
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2" aria-labelledby="userMenu">
+                                    @if (isDoctor)
+                                    {
+                                        <li><a class="dropdown-item fw-bold text-primary mb-2" asp-controller="Doctor" asp-action="MyTimeSlots"><i class="bi bi-calendar-week me-2"></i>My Timeslots</a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                    }
+                                    <li><a class="dropdown-item text-danger fw-bold" asp-controller="Account" asp-action="Logout"><i class="bi bi-box-arrow-right me-2"></i>Log out</a></li>
+                                </ul>
+                            </div>
+                        }
+                        else
+                        {
+                            <a class="btn btn-outline-primary me-2 px-4 fw-bold rounded-pill" asp-controller="Account" asp-action="Login">Вход</a>
+                            <a class="btn btn-primary px-4 shadow-sm fw-bold rounded-pill" asp-controller="Account" asp-action="Register">Регистрация</a>
+                        }
                     </div>
                 </div>
             </div>

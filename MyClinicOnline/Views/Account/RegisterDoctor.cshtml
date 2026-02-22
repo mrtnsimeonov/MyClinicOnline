@@ -17,7 +17,14 @@
 
                     <div class="mb-3">
                         <label class="form-label fw-bold">Email Address</label>
-                        <input asp-for="Email" class="form-control form-control-lg bg-light border-0" placeholder="doctor@clinic.com" />
+                        <input asp-for="Email" type="email" class="form-control form-control-lg bg-light border-0" placeholder="doctor@clinic.com" required />
+                        <span asp-validation-for="Email" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Password</label>
+                        <input asp-for="Password" type="password" class="form-control form-control-lg bg-light border-0" placeholder="Enter password" required />
+                        <span asp-validation-for="Password" class="text-danger"></span>
                     </div>
 
                     <div class="row mb-3">

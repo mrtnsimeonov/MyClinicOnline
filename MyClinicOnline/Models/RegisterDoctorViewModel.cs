@@ -11,6 +11,10 @@ namespace MyClinicOnline.Models
         [EmailAddress]
         public string Email { get; set; }
 
+        [Required]
+        [DataType(DataType.Password)]
+        public string Password { get; set; }
+
         public bool WorksWithNhif { get; set; }
 
         [Required(ErrorMessage = "Please select a city")]

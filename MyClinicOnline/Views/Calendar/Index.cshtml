@@ -13,7 +13,8 @@
         .GroupBy(s => s.StartTime.Date)
         .ToDictionary(
             g => g.Key.ToString("yyyy-MM-dd"),
-            g => g.OrderBy(x => x.StartTime).Select(x => new {
+            g => g.OrderBy(x => x.StartTime).Select(x => new
+            {
                 id = x.Id,
                 time = x.StartTime.ToString("HH:mm"),
                 booked = x.IsBooked
@@ -25,8 +26,7 @@
     // Calendar grid helpers
     int daysInMonth = DateTime.DaysInMonth(monthStart.Year, monthStart.Month);
     int firstDayOfWeek = (int)monthStart.DayOfWeek; // Sunday=0
-    // Make Monday first (optional): convert so Monday=0
-    int offset = (firstDayOfWeek + 6) % 7;
+    int offset = (firstDayOfWeek + 6) % 7; // Monday first
 }
 
 <div class="container my-5">
@@ -44,7 +44,6 @@
         <div class="d-flex gap-2">
             @{
                 var prev = monthStart.AddMonths(-1);
-                reveals:
                 bool canPrev = prev >= Model.MinMonth;
                 var next = monthStart.AddMonths(1);
                 bool canNext = next <= Model.MaxMonth;
@@ -108,8 +107,6 @@
                         {
                             var date = new DateTime(monthStart.Year, monthStart.Month, day);
                             var key = date.ToString("yyyy-MM-dd");
-
-                            // make past days in current month disabled
                             bool isPast = date.Date < DateTime.Today;
 
                             <div class="col">
@@ -117,7 +114,7 @@
                                         class="w-100 border rounded p-2 text-start @(isPast ? "bg-light" : "bg-white")"
                                         style="height:70px;"
                                         onclick="selectDay('@key')"
-                                        @(isPast ? "disabled" : "")>
+                                @(isPast ? "disabled" : "")>
                                     <div class="fw-bold">@day</div>
                                     <div class="text-muted" style="font-size:12px;">
                                         @date.ToString("ddd", CultureInfo.InvariantCulture)
@@ -148,9 +145,9 @@
                         <div class="form-text">Booked hours appear in red and cannot be selected.</div>
                     </div>
 
-                    <form asp-action="Book" method="post">
+                    <form asp-action="Book" method="post" id="bookingForm">
                         <input type="hidden" name="slotId" id="slotId" />
-                        <button id="bookBtn" class="btn btn-primary w-100" type="submit" disabled>
+                        <button id="bookBtn" class="btn btn-primary w-100" type="button" disabled onclick="handleBooking()">
                             Book / Запази
                         </button>
                     </form>
@@ -161,57 +158,65 @@
 </div>
 
 @section Scripts {
-<script>
-    const dayMap = @Html.Raw(json);
+    <script>
+        const dayMap = @Html.Raw(json);
+        const isAuthenticated = @User.Identity.IsAuthenticated.ToString().ToLower();
 
-    function selectDay(key) {
-        document.getElementById("selectedDay").value = key;
-
-        const select = document.getElementById("hoursSelect");
-        const bookBtn = document.getElementById("bookBtn");
-        const slotIdInput = document.getElementById("slotId");
-
-        select.innerHTML = "";
-        slotIdInput.value = "";
-        bookBtn.disabled = true;
-
-        const slots = dayMap[key] || [];
-        if (slots.length === 0) {
-            select.disabled = true;
-            const opt = document.createElement("option");
-            opt.textContent = "No working hours";
-            select.appendChild(opt);
-            return;
+        //  This function handles your popup check
+        function handleBooking() {
+            if (!isAuthenticated) {
+                alert("You need to be logged in to book an hour.");
+            } else {
+                document.getElementById("bookingForm").submit();
+            }
         }
 
-        select.disabled = false;
+        function selectDay(key) {
+            document.getElementById("selectedDay").value = key;
 
-        // Add placeholder
-        const first = document.createElement("option");
-        first.value = "";
-        first.textContent = "-- Select hour --";
-        select.appendChild(first);
+            const select = document.getElementById("hoursSelect");
+            const bookBtn = document.getElementById("bookBtn");
+            const slotIdInput = document.getElementById("slotId");
 
-        // Add hours
-        slots.forEach(s => {
-            const opt = document.createElement("option");
-            opt.value = s.id;
-            opt.textContent = s.time;
+            select.innerHTML = "";
+            slotIdInput.value = "";
+            bookBtn.disabled = true;
 
-            if (s.booked) {
-                opt.disabled = true;
-                opt.style.backgroundColor = "#f8d7da"; // light red
-                opt.style.color = "#000";
+            const slots = dayMap[key] || [];
+            if (slots.length === 0) {
+                select.disabled = true;
+                const opt = document.createElement("option");
+                opt.textContent = "No working hours";
+                select.appendChild(opt);
+                return;
             }
 
-            select.appendChild(opt);
-        });
+            select.disabled = false;
 
-        select.onchange = () => {
-            const chosen = select.value;
-            slotIdInput.value = chosen;
-            bookBtn.disabled = !chosen;
-        };
-    }
-</script>
+            const first = document.createElement("option");
+            first.value = "";
+            first.textContent = "-- Select hour --";
+            select.appendChild(first);
+
+            slots.forEach(s => {
+                const opt = document.createElement("option");
+                opt.value = s.id;
+                opt.textContent = s.time;
+
+                if (s.booked) {
+                    opt.disabled = true;
+                    opt.style.backgroundColor = "#f8d7da";
+                    opt.style.color = "#000";
+                }
+
+                select.appendChild(opt);
+            });
+
+            select.onchange = () => {
+                const chosen = select.value;
+                slotIdInput.value = chosen;
+                bookBtn.disabled = !chosen;
+            };
+        }
+    </script>
 }

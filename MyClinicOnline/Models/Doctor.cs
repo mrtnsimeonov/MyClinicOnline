@@ -15,6 +15,8 @@ namespace MyClinicOnline.Models
         [EmailAddress(ErrorMessage = "Invalid email address format.")]
         public string Email { get; set; }
 
+        public string Password { get; set; }
+
         public bool WorksWithNhif { get; set; }
 
         // --- City Relationship ---

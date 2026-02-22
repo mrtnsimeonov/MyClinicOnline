@@ -2,77 +2,109 @@
     ViewData["Title"] = "Contact Us";
 }
 
-<div class="container py-5 mt-4">
-    <div class="text-center mb-5">
-        <h1 class="display-5 fw-bold">Get in Touch</h1>
-        <p class="text-muted fs-5 mx-auto" style="max-width: 600px;">
-            Have questions? Our team is here to help you navigate your healthcare journey.
-        </p>
-    </div>
+<style>
+    .contact-page-bg {
+        background: #f8faff;
+        background-image: radial-gradient(#4a90e210 1px, transparent 1px);
+        background-size: 30px 30px;
+        min-height: 90vh;
+        display: flex;
+        align-items: center;
+    }
 
-    <div class="row g-0 shadow-lg rounded-4 overflow-hidden border">
-        <div class="col-lg-4 bg-primary p-5 text-white">
-            <h3 class="fw-bold mb-4">Contact Information</h3>
-            <p class="opacity-75 mb-5">Reach out via any of these channels and we will get back to you within 24 hours.</p>
+    .contact-sidebar {
+        background: linear-gradient(145deg, #007bff, #0056b3);
+        position: relative;
+        overflow: hidden;
+    }
 
-            <div class="d-flex align-items-center mb-4">
-                <div class="bg-white bg-opacity-25 rounded-circle p-3 me-3">
-                    <i class="bi bi-geo-alt-fill"></i>
-                </div>
-                <span>Sofia, Bulgaria</span>
-            </div>
+        /* Flare effect */
+        .contact-sidebar::after {
+            content: "";
+            position: absolute;
+            top: -20%;
+            right: -20%;
+            width: 150px;
+            height: 150px;
+            background: rgba(255, 255, 255, 0.15);
+            filter: blur(40px);
+            border-radius: 50%;
+        }
+</style>
 
-            <div class="d-flex align-items-center mb-4">
-                <div class="bg-white bg-opacity-25 rounded-circle p-3 me-3">
-                    <i class="bi bi-telephone-fill"></i>
-                </div>
-                <span>+359 888 123 456</span>
-            </div>
-
-            <div class="d-flex align-items-center mb-5">
-                <div class="bg-white bg-opacity-25 rounded-circle p-3 me-3">
-                    <i class="bi bi-envelope-fill"></i>
-                </div>
-                <span>MyClinicOnline@outlook.com</span>
-            </div>
-
-            <div class="mt-auto">
-                <p class="small opacity-50 mb-0">Operating Hours:</p>
-                <p class="small">Mon - Fri: 09:00 - 18:00</p>
-            </div>
+<div class="contact-page-bg py-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h1 class="display-5 fw-bold text-dark">Get in Touch</h1>
+            <p class="text-secondary fs-5 mx-auto" style="max-width: 600px;">
+                Have questions? Our team is here to help you navigate your healthcare journey.
+            </p>
         </div>
 
-        <div class="col-lg-8 bg-white p-5">
-            <h3 class="fw-bold mb-4">Send us a message</h3>
-            <form>
-                <div class="row g-3">
-                    <div class="col-md-6">
-                        <label class="form-label fw-medium">Your Name</label>
-                        <input type="text" class="form-control form-control-lg bg-light border-0" placeholder="John Doe">
+        <div class="row g-0 shadow-lg rounded-4 overflow-hidden border-0">
+            <div class="col-lg-4 contact-sidebar p-5 text-white d-flex flex-column">
+                <h3 class="fw-bold mb-4">Contact Information</h3>
+                <p class="opacity-75 mb-5 small">Reach out via any of these channels and we will get back to you within 24 hours.</p>
+
+                <div class="d-flex align-items-center mb-4">
+                    <div class="bg-white bg-opacity-20 rounded-circle p-3 me-3">
+                        <i class="bi bi-geo-alt-fill"></i>
                     </div>
-                    <div class="col-md-6">
-                        <label class="form-label fw-medium">Your Email</label>
-                        <input type="email" class="form-control form-control-lg bg-light border-0" placeholder="john@example.com">
-                    </div>
-                    <div class="col-12">
-                        <label class="form-label fw-medium">Subject</label>
-                        <select class="form-select form-select-lg bg-light border-0">
-                            <option selected>General Inquiry</option>
-                            <option>Technical Support</option>
-                            <option>Doctor Partnership</option>
-                        </select>
-                    </div>
-                    <div class="col-12">
-                        <label class="form-label fw-medium">Message</label>
-                        <textarea class="form-control bg-light border-0" rows="5" placeholder="How can we help you?"></textarea>
-                    </div>
-                    <div class="col-12 mt-4">
-                        <button type="submit" class="btn btn-primary btn-lg px-5 rounded-pill shadow-sm">
-                            Send Message <i class="bi bi-send ms-2"></i>
-                        </button>
-                    </div>
+                    <span class="fw-medium">Sofia, Bulgaria</span>
                 </div>
-            </form>
+
+                <div class="d-flex align-items-center mb-4">
+                    <div class="bg-white bg-opacity-20 rounded-circle p-3 me-3">
+                        <i class="bi bi-telephone-fill"></i>
+                    </div>
+                    <span class="fw-medium">+359 888 123 456</span>
+                </div>
+
+                <div class="d-flex align-items-center mb-5">
+                    <div class="bg-white bg-opacity-20 rounded-circle p-3 me-3">
+                        <i class="bi bi-envelope-fill"></i>
+                    </div>
+                    <span class="fw-medium">MyClinicOnline@outlook.com</span>
+                </div>
+
+                <div class="mt-auto pt-4 border-top border-white border-opacity-10">
+                    <p class="small opacity-50 mb-0">Operating Hours:</p>
+                    <p class="small fw-bold">Mon - Fri: 09:00 - 18:00</p>
+                </div>
+            </div>
+
+            <div class="col-lg-8 bg-white p-5">
+                <h3 class="fw-bold mb-4 text-dark">Send us a message</h3>
+                <form>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-muted text-uppercase">Your Name</label>
+                            <input type="text" class="form-control form-control-lg bg-light border-0 fs-6" placeholder="John Doe">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-muted text-uppercase">Your Email</label>
+                            <input type="email" class="form-control form-control-lg bg-light border-0 fs-6" placeholder="john@example.com">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-bold small text-muted text-uppercase">Subject</label>
+                            <select class="form-select form-select-lg bg-light border-0 fs-6">
+                                <option selected>General Inquiry</option>
+                                <option>Technical Support</option>
+                                <option>Doctor Partnership</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-bold small text-muted text-uppercase">Message</label>
+                            <textarea class="form-control bg-light border-0 fs-6" rows="4" placeholder="How can we help you?"></textarea>
+                        </div>
+                        <div class="col-12 mt-4">
+                            <button type="submit" class="btn btn-primary btn-lg px-5 rounded-pill shadow-sm fw-bold">
+                                Send Message <i class="bi bi-send ms-2"></i>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 </div>

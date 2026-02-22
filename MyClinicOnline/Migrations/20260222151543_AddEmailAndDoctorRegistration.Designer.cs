@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using MyClinicOnline.Data;
 
@@ -11,9 +12,11 @@ using MyClinicOnline.Data;
 namespace MyClinicOnline.Migrations
 {
     [DbContext(typeof(MyClinicOnlineContext))]
-    partial class MyClinicOnlineContextModelSnapshot : ModelSnapshot
+    [Migration("20260222151543_AddEmailAndDoctorRegistration")]
+    partial class AddEmailAndDoctorRegistration
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

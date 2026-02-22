@@ -2,45 +2,133 @@
     ViewData["Title"] = "About Us";
 }
 
-<div class="container my-5">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
+<style>
+    .about-page-wrapper {
+        background: radial-gradient(circle at top left, #e9f5ff 0%, #ffffff 40%), linear-gradient(135deg, #f0f7ff 0%, #e0edff 100%);
+        min-height: 80vh;
+        display: flex;
+        align-items: center;
+        position: relative;
+        overflow: hidden;
+    }
 
-            <div class="text-center mb-4">
-                <h1 class="fw-bold">Welcome to MyClinicOnline</h1>
-                <p class="text-muted fs-5">
-                    Your trusted platform for finding and booking medical care.
-                </p>
+        /* Subtle grid pattern overlay */
+        .about-page-wrapper::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: linear-gradient(#4a90e212 1px, transparent 1px), linear-gradient(90deg, #4a90e212 1px, transparent 1px);
+            background-size: 40px 40px;
+            z-index: 0;
+        }
+
+    .glass-card {
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        z-index: 1;
+    }
+
+    .impact-card {
+        background: linear-gradient(145deg, #007bff, #0056b3);
+        position: relative;
+        overflow: hidden;
+        z-index: 1;
+    }
+
+        /* The "Flare" effect from your image */
+        .impact-card::after {
+            content: "";
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
+            transform: rotate(30deg);
+        }
+
+    .stat-glow {
+        text-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+    }
+</style>
+
+<div class="about-page-wrapper">
+    <div class="container position-relative">
+        <div class="row g-4 align-items-stretch">
+
+            <div class="col-lg-8">
+                <div class="card glass-card border-0 shadow-lg rounded-4 h-100 p-4 p-md-5">
+                    <div class="card-body">
+                        <span class="badge rounded-pill bg-primary bg-opacity-10 text-primary px-3 py-2 mb-3 fw-bold">
+                            <i class="bi bi-info-circle-fill me-1"></i> ABOUT US
+                        </span>
+
+                        <h1 class="display-5 fw-bold mb-3 text-dark">Redefining Healthcare</h1>
+
+                        <p class="text-secondary fs-5 mb-5 lh-base" style="max-width: 90%;">
+                            <span class="text-primary fw-bold">MyClinicOnline</span> bridges the gap between specialists and patients.
+                            We make healthcare accessible, transparent, and digital-first for everyone in Bulgaria.
+                        </p>
+
+                        <div class="row g-3 mb-5 text-center">
+                            <div class="col-6 col-md-3">
+                                <div class="p-3">
+                                    <i class="bi bi-shield-check text-primary display-6 d-block mb-2"></i>
+                                    <span class="fw-bold text-muted small text-uppercase">Verified</span>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <div class="p-3">
+                                    <i class="bi bi-clock-history text-primary display-6 d-block mb-2"></i>
+                                    <span class="fw-bold text-muted small text-uppercase">Real-time</span>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <div class="p-3">
+                                    <i class="bi bi-search text-primary display-6 d-block mb-2"></i>
+                                    <span class="fw-bold text-muted small text-uppercase">Smart Search</span>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <div class="p-3">
+                                    <i class="bi bi-laptop text-primary display-6 d-block mb-2"></i>
+                                    <span class="fw-bold text-muted small text-uppercase">Modern UI</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-center justify-content-lg-start">
+                            <a asp-controller="Home" asp-action="Index" class="btn btn-primary btn-lg px-5 rounded-pill shadow fw-bold">
+                                Find a Doctor Now <i class="bi bi-arrow-right ms-2"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <div class="card shadow-sm">
-                <div class="card-body p-4">
-                    <p class="fs-5">
-                        <strong>MyClinicOnline</strong> is an online platform designed to help patients
-                        easily find doctors, explore medical specialties, and book appointments
-                        in a fast and convenient way.
-                    </p>
+            <div class="col-lg-4">
+                <div class="card impact-card text-white border-0 rounded-4 h-100 p-4 p-md-5 shadow-lg">
+                    <div class="card-body d-flex flex-column justify-content-center position-relative" style="z-index: 2;">
+                        <h2 class="fw-bold mb-5 border-bottom border-white border-opacity-25 pb-3">Our Impact</h2>
 
-                    <p>
-                        We connect patients with qualified medical professionals, making healthcare
-                        more accessible and transparent. Whether you are looking for a specialist,
-                        a consultation, or reliable medical information, our goal is to simplify
-                        the process and save you time.
-                    </p>
+                        <div class="mb-4">
+                            <h2 class="display-5 fw-bold mb-0 stat-glow">10k+</h2>
+                            <p class="opacity-75 fs-6">Registered Patients</p>
+                        </div>
 
-                    <ul class="list-group list-group-flush my-4">
-                        <li class="list-group-item">✔ Search doctors by specialty</li>
-                        <li class="list-group-item">✔ View verified doctor profiles</li>
-                        <li class="list-group-item">✔ Easy and fast appointment booking</li>
-                        <li class="list-group-item">✔ Modern and user-friendly interface</li>
-                    </ul>
+                        <div class="mb-4">
+                            <h2 class="display-5 fw-bold mb-0 stat-glow">500+</h2>
+                            <p class="opacity-75 fs-6">Certified Specialists</p>
+                        </div>
 
-                    <div class="text-center mt-4">
-                        <a asp-controller="Home"
-                           asp-action="Index"
-                           class="btn btn-primary btn-lg">
-                            Find a Doctor Now
-                        </a>
+                        <div>
+                            <h2 class="display-5 fw-bold mb-0 stat-glow">50+</h2>
+                            <p class="opacity-75 fs-6">Specialties</p>
+                        </div>
                     </div>
                 </div>
             </div>

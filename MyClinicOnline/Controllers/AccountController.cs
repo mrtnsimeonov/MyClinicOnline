@@ -60,15 +60,13 @@ namespace MyClinicOnline.Controllers
         {
             try
             {
-                var fromAddress = new MailAddress("mycliniconline@outlook.com", "MyClinicOnline");
+                var fromAddress = new MailAddress("maartin.simeonov@gmail.com", "MyClinicOnline");
                 var toAddress = new MailAddress(toEmail);
-
-                // Твоят актуален 16-символен код
-                const string fromPassword = "ifkzlrwcyrvouehv";
+                const string fromPassword = "rkgrophwmddyftza"; // Your new Gmail App Password
 
                 var smtp = new SmtpClient
                 {
-                    Host = "smtp.office365.com",
+                    Host = "smtp.gmail.com",
                     Port = 587,
                     EnableSsl = true,
                     DeliveryMethod = SmtpDeliveryMethod.Network,
@@ -87,6 +85,7 @@ namespace MyClinicOnline.Controllers
             }
             catch (Exception ex)
             {
+                // This will help you see if there's an error in the Output window in Visual Studio
                 System.Diagnostics.Debug.WriteLine("Email Error: " + ex.Message);
                 throw;
             }

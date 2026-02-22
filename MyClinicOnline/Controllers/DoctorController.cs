@@ -6,7 +6,6 @@ using MyClinicOnline.Services; // Ensure you have the Email Service from previou
 
 namespace MyClinicOnline.Controllers
 {
-    [Authorize(Roles = "Doctor")]
     public class DoctorController : Controller
     {
         private readonly MyClinicOnlineContext _context;
@@ -17,7 +16,27 @@ namespace MyClinicOnline.Controllers
             _context = context;
             _emailService = emailService;
         }
+        public async Task<IActionResult> Search(string specialty)
+        {
+            if (string.IsNullOrWhiteSpace(specialty))
+            {
+                ViewBag.Specialty = specialty;
+                return View(new List<Models.Doctor>());
+            }
 
+            var doctors = await _context.Doctors
+                .Include(d => d.Specialties)
+                    .ThenInclude(ds => ds.Specialty)
+                .Where(d =>
+                    d.Specialties.Any(ds =>
+                        ds.Specialty.Name.Contains(specialty)))
+                .ToListAsync();
+
+            ViewBag.Specialty = specialty;
+            return View(doctors);
+        }
+
+        [Authorize(Roles = "Doctor")]
         public async Task<IActionResult> MyTimeSlots()
         {
             // Get the ID of the logged-in doctor
@@ -40,6 +59,7 @@ namespace MyClinicOnline.Controllers
             return View(slots); // This looks for Views/Doctor/MyTimeSlots.cshtml
         }
 
+        [Authorize(Roles = "Doctor")]
         [HttpPost]
         public async Task<IActionResult> CancelBooking(int slotId)
         {
@@ -70,5 +90,6 @@ namespace MyClinicOnline.Controllers
 
             return RedirectToAction("MyTimeSlots");
         }
+
     }
 }

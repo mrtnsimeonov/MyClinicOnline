@@ -4,44 +4,61 @@
     ViewData["Title"] = "Book Appointment";
 }
 
-<div class="container my-5">
-    <div class="text-center mb-4">
-        <h1 class="fw-bold">Book an Appointment</h1>
-        <p class="text-muted fs-5">Choose specialty and city to find available doctors.</p>
+<div class="container py-5" style="min-height: 80vh;">
+    <div class="text-center mb-5">
+        <span class="badge rounded-pill bg-primary bg-opacity-10 text-primary px-3 py-2 mb-3 fw-bold">
+            <i class="bi bi-calendar-check me-1"></i> Quick Scheduling
+        </span>
+        <h1 class="display-5 fw-bold text-dark">Find Your Specialist</h1>
+        <p class="text-secondary fs-5">Select your needs below to view available time slots.</p>
     </div>
 
-    <div class="card shadow-sm">
-        <div class="card-body p-4">
-            <form asp-controller="Booking" asp-action="Search" method="get" class="row g-3">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-xl rounded-4 p-4 p-md-5 bg-white">
+                <form asp-controller="Booking" asp-action="Search" method="get" class="row g-4">
 
-                <div class="col-md-6">
-                    <label class="form-label fw-semibold">Type of practice (Specialty)</label>
-                    <select name="specialtyId" class="form-select" required>
-                        <option value="">-- Select specialty --</option>
-                        @foreach (var s in Model.Specialties)
-                        {
-                            <option value="@s.Id">@s.Name</option>
-                        }
-                    </select>
-                </div>
+                    <div class="col-md-6">
+                        <label class="small fw-bold text-muted text-uppercase mb-2 d-block tracking-wider">Type of Practice</label>
+                        <div class="input-group input-group-lg border rounded-3 overflow-hidden transition-all">
+                            <span class="input-group-text bg-white border-0"><i class="bi bi-briefcase text-primary"></i></span>
+                            <select name="specialtyId" class="form-select border-0 shadow-none fs-6" required>
+                                <option value="">-- Select specialty --</option>
+                                @foreach (var s in Model.Specialties)
+                                {
+                                    <option value="@s.Id">@s.Name</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
 
-                <div class="col-md-6">
-                    <label class="form-label fw-semibold">City / Region</label>
-                    <select name="cityId" class="form-select" required>
-                        <option value="">-- Select city --</option>
-                        @foreach (var c in Model.Cities)
-                        {
-                            <option value="@c.Id">@c.Name</option>
-                        }
-                    </select>
-                </div>
+                    <div class="col-md-6">
+                        <label class="small fw-bold text-muted text-uppercase mb-2 d-block tracking-wider">City / Region</label>
+                        <div class="input-group input-group-lg border rounded-3 overflow-hidden transition-all">
+                            <span class="input-group-text bg-white border-0"><i class="bi bi-geo-alt text-primary"></i></span>
+                            <select name="cityId" class="form-select border-0 shadow-none fs-6" required>
+                                <option value="">-- Select city --</option>
+                                @foreach (var c in Model.Cities)
+                                {
+                                    <option value="@c.Id">@c.Name</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
 
-                <div class="col-12 d-grid mt-2">
-                    <button type="submit" class="btn btn-primary btn-lg">
-                        Search
-                    </button>
-                </div>
-            </form>
+                    <div class="col-12 mt-4">
+                        <button type="submit" class="btn btn-primary btn-lg w-100 py-3 fw-bold rounded-3 shadow-sm transition-up">
+                            Show Available Doctors <i class="bi bi-arrow-right ms-2"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="mt-4 text-center">
+                <p class="text-muted small">
+                    <i class="bi bi-info-circle me-1"></i> You can filter by insurance and rating on the next page.
+                </p>
+            </div>
         </div>
     </div>
 </div>

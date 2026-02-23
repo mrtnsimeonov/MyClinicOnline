@@ -1,0 +1,137 @@
+﻿@model IEnumerable<MyClinicOnline.Models.MyAppointmentViewModel>
+
+@{
+    ViewData["Title"] = "My Appointments";
+}
+
+<style>
+    /* Reuse the high-end background from your Home page */
+    .appointments-wrapper {
+        background: radial-gradient(circle at top right, #e9f5ff 0%, #ffffff 50%), linear-gradient(135deg, #f0f7ff 0%, #e0edff 100%);
+        position: relative;
+        overflow: hidden;
+        min-height: 90vh;
+        padding: 60px 0;
+    }
+
+        /* Consistent grid pattern */
+        .appointments-wrapper::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: linear-gradient(#4a90e212 1px, transparent 1px), linear-gradient(90deg, #4a90e212 1px, transparent 1px);
+            background-size: 40px 40px;
+            z-index: 0;
+        }
+
+    .appointment-card {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border-radius: 20px;
+    }
+
+        .appointment-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 102, 255, 0.1) !important;
+            background: rgba(255, 255, 255, 0.9);
+        }
+
+    .status-badge {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        padding: 6px 12px;
+    }
+
+    .date-box {
+        background: #f0f7ff;
+        border-radius: 12px;
+        padding: 15px;
+        text-align: center;
+        min-width: 80px;
+    }
+</style>
+
+<div class="appointments-wrapper">
+    <div class="container position-relative" style="z-index: 2;">
+        <div class="row mb-5">
+            <div class="col-lg-8">
+                <span class="badge rounded-pill bg-primary bg-opacity-10 text-primary px-3 py-2 mb-3 fw-bold">
+                    <i class="bi bi-calendar2-check me-1"></i> Patient Portal
+                </span>
+                <h1 class="display-5 fw-bold text-dark mb-2">My <span class="text-primary">Appointments</span></h1>
+                <p class="text-secondary lead">Manage your upcoming visits and medical history.</p>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            @if (!Model.Any())
+            {
+                <div class="col-12">
+                    <div class="card border-0 shadow-sm rounded-4 p-5 text-center bg-white bg-opacity-50">
+                        <i class="bi bi-calendar-x fs-1 text-muted mb-3"></i>
+                        <h3>No appointments yet</h3>
+                        <p class="text-muted">When you book a visit, it will appear here.</p>
+                        <a asp-controller="Home" asp-action="Index" class="btn btn-primary px-4 mt-2">Find a Doctor</a>
+                    </div>
+                </div>
+            }
+            else
+            {
+                @foreach (var app in Model)
+                {
+                    <div class="col-md-6 col-xl-4">
+                        <div class="card appointment-card border-0 shadow-sm p-4 h-100">
+                            <div class="d-flex justify-content-between align-items-start mb-4">
+                                <div class="date-box border">
+                                    <span class="d-block fw-bold text-primary fs-5">@app.DateTime.Day</span>
+                                    <span class="small text-uppercase text-muted">@app.DateTime.ToString("MMM")</span>
+                                </div>
+                                @if (app.IsPast)
+                                {
+                                    <span class="badge rounded-pill bg-secondary bg-opacity-10 text-secondary status-badge">Completed</span>
+                                }
+                                else
+                                {
+                                    <span class="badge rounded-pill bg-success bg-opacity-10 text-success status-badge">Upcoming</span>
+                                }
+                            </div>
+
+                            <div class="mb-4">
+                                <h5 class="fw-bold mb-1">Д-р @app.DoctorName</h5>
+                                <p class="text-muted small mb-0">
+                                    <i class="bi bi-clock me-1"></i> @app.DateTime.ToString("HH:mm") ч.
+                                </p>
+                            </div>
+
+                            <div class="mt-auto d-flex gap-2">
+                                @if (!app.IsPast)
+                                {
+                                    <form asp-action="CancelAppointment" method="post" class="w-100" onsubmit="return confirm('Are you sure you want to cancel this appointment?');">
+                                        <input type="hidden" name="appointmentId" value="@app.AppointmentId" />
+                                        <input type="hidden" name="slotId" value="@app.SlotId" />
+                                        <button type="submit" class="btn btn-outline-danger w-100 rounded-3 fw-bold py-2">
+                                            Cancel Visit
+                                        </button>
+                                    </form>
+                                }
+                                else
+                                {
+                                    <button class="btn btn-light w-100 rounded-3 fw-bold py-2" disabled>
+                                        View Summary
+                                    </button>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+        </div>
+    </div>
+</div>

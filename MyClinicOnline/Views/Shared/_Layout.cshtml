@@ -43,18 +43,54 @@
                         {
                             var initials = User.FindFirst("Initials")?.Value;
                             var isDoctor = User.IsInRole("Doctor");
+                            var isPatient = User.IsInRole("Patient"); // We'll use this for the check
 
                             <div class="dropdown">
-                                <button class="btn btn-outline-primary rounded-circle fw-bold dropdown-toggle d-flex justify-content-center align-items-center" type="button" id="userMenu" data-bs-toggle="dropdown" aria-expanded="false" style="width: 45px; height: 45px;">
-                                    @initials
+                                <button class="btn btn-white shadow-sm border rounded-pill px-3 py-1 dropdown-toggle d-flex align-items-center gap-2"
+                                        type="button" id="userMenu" data-bs-toggle="dropdown" aria-expanded="false" style="transition: all 0.3s ease;">
+                                    <div class="bg-primary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center text-primary fw-bold"
+                                         style="width: 32px; height: 32px; font-size: 0.85rem;">
+                                        @initials
+                                    </div>
+                                    <span class="fw-bold text-dark small">Account</span>
                                 </button>
-                                <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2" aria-labelledby="userMenu">
+
+                                <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 rounded-4 mt-2 p-2" aria-labelledby="userMenu" style="min-width: 240px;">
+
                                     @if (isDoctor)
                                     {
-                                        <li><a class="dropdown-item fw-bold text-primary mb-2" asp-controller="Doctor" asp-action="MyTimeSlots"><i class="bi bi-calendar-week me-2"></i>My Timeslots</a></li>
-                                        <li><hr class="dropdown-divider"></li>
+                                        <li>
+                                            <a class="dropdown-item rounded-3 py-2 d-flex align-items-center profile-link" asp-controller="Doctor" asp-action="MyTimeSlots">
+                                                <i class="bi bi-calendar-week text-primary me-2 fs-5"></i>
+                                                <div>
+                                                    <span class="d-block fw-bold text-dark" style="font-size: 0.9rem;">My Timeslots</span>
+                                                    <small class="text-muted" style="font-size: 0.7rem;">Manage availability</small>
+                                                </div>
+                                            </a>
+                                        </li>
                                     }
-                                    <li><a class="dropdown-item text-danger fw-bold" asp-controller="Account" asp-action="Logout"><i class="bi bi-box-arrow-right me-2"></i>Log out</a></li>
+
+                                    @if (isPatient) // ONLY SHOWS FOR PATIENTS
+                                    {
+                                        <li>
+                                            <a class="dropdown-item rounded-3 py-2 d-flex align-items-center profile-link" asp-controller="Booking" asp-action="MyAppointments">
+                                                <i class="bi bi-calendar-check text-primary me-2 fs-5"></i>
+                                                <div>
+                                                    <span class="d-block fw-bold text-dark" style="font-size: 0.9rem;">Моите Часове</span>
+                                                    <small class="text-muted" style="font-size: 0.7rem;">Manage your bookings</small>
+                                                </div>
+                                            </a>
+                                        </li>
+                                    }
+
+                                    <li><hr class="dropdown-divider mx-2"></li>
+
+                                    <li>
+                                        <a class="dropdown-item rounded-3 py-2 d-flex align-items-center profile-link-logout" asp-controller="Account" asp-action="Logout">
+                                            <i class="bi bi-box-arrow-right text-danger me-2 fs-5"></i>
+                                            <span class="fw-bold text-danger" style="font-size: 0.9rem;">Изход</span>
+                                        </a>
+                                    </li>
                                 </ul>
                             </div>
                         }

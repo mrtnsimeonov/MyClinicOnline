@@ -85,3 +85,45 @@ body {
     color: #007bff;
     margin-bottom: 15px;
 }
+
+/* --- Modern Profile Dropdown Extensions --- */
+
+/* Glassmorphism effect for the dropdown menu */
+.dropdown-menu {
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(0, 0, 0, 0.05) !important;
+}
+
+/* Hover effect for Patient/Doctor links */
+.profile-link {
+    transition: all 0.2s ease;
+}
+
+    .profile-link:hover {
+        background-color: #f0f7ff !important; /* Soft medical blue background */
+        transform: translateX(4px); /* Professional "nudge" effect */
+    }
+
+/* Hover effect for Logout */
+.profile-link-logout {
+    transition: all 0.2s ease;
+}
+
+    .profile-link-logout:hover {
+        background-color: #fff5f5 !important; /* Soft red background for logout */
+    }
+
+/* Ensure the account pill button looks clean */
+#userMenu {
+    background-color: white;
+    transition: all 0.3s ease;
+    border-color: rgba(0,0,0,0.1);
+}
+
+    #userMenu:hover {
+        background-color: #f8f9fa;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05) !important;
+        border-color: var(--medical-blue);
+    }

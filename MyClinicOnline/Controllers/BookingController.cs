@@ -100,6 +100,47 @@ namespace MyClinicOnline.Controllers
                 return Json(new { success = false, message = ex.Message });
             }
         }
+        // 1. Show Appointments
+        public async Task<IActionResult> MyAppointments()
+        {
+            var userIdClaim = User.FindFirst("UserId")?.Value;
+            if (userIdClaim == null) return RedirectToAction("Login", "Account");
+            int patientId = int.Parse(userIdClaim);
+
+            var appointments = await _context.Appointments
+                .Include(a => a.Doctor)
+                .Include(a => a.TimeSlot)
+                .Where(a => a.UserId == patientId)
+                .OrderByDescending(a => a.TimeSlot.StartTime)
+                .Select(a => new MyAppointmentViewModel
+                {
+                    AppointmentId = a.Id,
+                    SlotId = a.TimeSlotId,
+                    DoctorName = a.Doctor.FullName,
+                    DateTime = a.TimeSlot.StartTime,
+                    IsPast = a.TimeSlot.StartTime < DateTime.Now
+                })
+                .ToListAsync();
+
+            return View(appointments);
+        }
+
+        // 2. Cancel Appointment
+        [HttpPost]
+        public async Task<IActionResult> CancelAppointment(int appointmentId, int slotId)
+        {
+            var appointment = await _context.Appointments.FindAsync(appointmentId);
+            var slot = await _context.TimeSlots.FindAsync(slotId);
+
+            if (appointment != null && slot != null)
+            {
+                _context.Appointments.Remove(appointment);
+                slot.IsBooked = false; // Make the hour available again!
+                await _context.SaveChangesAsync();
+            }
+
+            return RedirectToAction("MyAppointments");
+        }
     }
 
     // THIS IS THE CLASS THAT WAS MISSING CAUSING THE ERROR!

@@ -9,7 +9,7 @@ namespace MyClinicOnline.Controllers
     public class BookingController : Controller
     {
         private readonly MyClinicOnlineContext _context;
-        private readonly IEmailService _emailService; // 🆕 Inject service
+        private readonly IEmailService _emailService;
 
         public BookingController(MyClinicOnlineContext context, IEmailService emailService)
         {
@@ -62,41 +62,47 @@ namespace MyClinicOnline.Controllers
         [HttpPost]
         public async Task<IActionResult> FinalizeBooking(int slotId)
         {
-            if (!User.Identity.IsAuthenticated || !User.IsInRole("Patient"))
+            try
             {
-                TempData["LoginMessage"] = "Трябва да сте влезли в профила си като пациент, за да запишете час!";
-                return RedirectToAction("Login", "Account");
+                if (!User.Identity.IsAuthenticated)
+                    return Json(new { success = false, message = "Моля, влезте в профила си." });
+
+                var userIdClaim = User.FindFirst("UserId")?.Value;
+                int patientId = int.Parse(userIdClaim);
+
+                var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == patientId);
+                var slot = await _context.TimeSlots.Include(s => s.Doctor).FirstOrDefaultAsync(s => s.Id == slotId);
+
+                if (slot == null || slot.IsBooked)
+                    return Json(new { success = false, message = "Часът вече е зает." });
+
+                // Save Appointment
+                var appointment = new Appointment
+                {
+                    DoctorId = slot.DoctorId,
+                    UserId = user.Id,
+                    TimeSlotId = slot.Id,
+                    Status = AppointmentStatus.Confirmed
+                };
+
+                slot.IsBooked = true;
+                _context.Appointments.Add(appointment);
+                await _context.SaveChangesAsync();
+
+                // SEND EMAIL
+                await _emailService.SendEmailAsync(user.Email, "Записан час", $"Успешно записахте час при Д-р {slot.Doctor.FullName}.");
+
+                // Return SUCCESS to the JavaScript
+                return Json(new { success = true });
             }
-
-            var slot = await _context.TimeSlots.Include(s => s.Doctor).FirstOrDefaultAsync(s => s.Id == slotId);
-            if (slot == null || slot.IsBooked) return BadRequest("Този час вече е зает.");
-
-            var userIdClaim = User.FindFirst("UserId")?.Value;
-            if (userIdClaim == null) return BadRequest();
-            int patientId = int.Parse(userIdClaim);
-
-            var appointment = new Appointment
+            catch (Exception ex)
             {
-                DoctorId = slot.DoctorId,
-                UserId = patientId,
-                TimeSlotId = slot.Id,
-                Status = AppointmentStatus.Confirmed,
-                ConsultationType = (ConsultationType)0
-            };
-
-            slot.IsBooked = true;
-            _context.Appointments.Add(appointment);
-            await _context.SaveChangesAsync();
-
-            // 🆕 Updated email text format
-            string patientEmail = User.Identity.Name;
-            string body = $"Successfully booked an hour with Dr. {slot.Doctor.FullName} from {slot.StartTime:HH:mm} on {slot.StartTime:dd.MM.yyyy}.";
-            await _emailService.SendEmailAsync(patientEmail, "Booking Confirmation", body);
-
-            return View("BookingSuccess");
+                return Json(new { success = false, message = ex.Message });
+            }
         }
     }
 
+    // THIS IS THE CLASS THAT WAS MISSING CAUSING THE ERROR!
     public class BookingSearchVm
     {
         public int SpecialtyId { get; set; }

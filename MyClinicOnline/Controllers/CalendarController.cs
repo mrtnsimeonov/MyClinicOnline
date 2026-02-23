@@ -2,16 +2,19 @@
 using Microsoft.EntityFrameworkCore;
 using MyClinicOnline.Data;
 using MyClinicOnline.Models;
+using MyClinicOnline.Services;
 
 namespace MyClinicOnline.Controllers
 {
     public class CalendarController : Controller
     {
         private readonly MyClinicOnlineContext _context;
+        private readonly IEmailService _emailService; // Add this
 
-        public CalendarController(MyClinicOnlineContext context)
+        public CalendarController(MyClinicOnlineContext context, IEmailService emailService) // Add emailService here
         {
             _context = context;
+            _emailService = emailService;
         }
 
         // /Calendar/Index?doctorId=1&year=2026&month=1
@@ -66,7 +69,11 @@ namespace MyClinicOnline.Controllers
         [HttpPost]
         public async Task<IActionResult> Book(int slotId)
         {
-            var slot = await _context.TimeSlots.FirstOrDefaultAsync(s => s.Id == slotId);
+            // 1. Fetch the slot AND the Doctor (Need .Include for the name in the email)
+            var slot = await _context.TimeSlots
+                .Include(s => s.Doctor)
+                .FirstOrDefaultAsync(s => s.Id == slotId);
+
             if (slot == null) return NotFound();
 
             if (slot.IsBooked)
@@ -75,8 +82,42 @@ namespace MyClinicOnline.Controllers
                 return RedirectToAction("Index", new { doctorId = slot.DoctorId });
             }
 
+            // 2. Fetch the logged-in User (Exact same logic as AccountController)
+            var userIdClaim = User.FindFirst("UserId")?.Value;
+            if (userIdClaim == null) return RedirectToAction("Login", "Account");
+            int patientId = int.Parse(userIdClaim);
+
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == patientId);
+            if (user == null) return RedirectToAction("Login", "Account");
+
+            // 3. Update Database
             slot.IsBooked = true;
+
+            // Optional: Add the appointment record if you have an Appointments table
+            var appointment = new Appointment
+            {
+                DoctorId = slot.DoctorId,
+                UserId = user.Id,
+                TimeSlotId = slot.Id,
+                Status = AppointmentStatus.Confirmed
+            };
+            _context.Appointments.Add(appointment);
+
             await _context.SaveChangesAsync();
+
+            // 4. SEND EMAIL (Exact same logic/names as your AccountController)
+            try
+            {
+                string subject = "Потвърждение за записан час";
+                string body = $"Здравейте, успешно записахте час при Д-р {slot.Doctor?.FullName} за {slot.StartTime:dd.MM.yyyy} в {slot.StartTime:HH:mm} ч.";
+
+                await _emailService.SendEmailAsync(user.Email, subject, body);
+            }
+            catch (Exception ex)
+            {
+                // Logs error to Visual Studio Output if email fails, but doesn't crash the site
+                System.Diagnostics.Debug.WriteLine("Booking Email Error: " + ex.Message);
+            }
 
             TempData["Success"] = "Booked successfully!";
             return RedirectToAction("Index", new { doctorId = slot.DoctorId, year = slot.StartTime.Year, month = slot.StartTime.Month });

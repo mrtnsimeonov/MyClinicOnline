@@ -1,0 +1,105 @@
+﻿@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Online Consultation – MyClinicOnline</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <script src="https://meet.jit.si/external_api.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: sans-serif;
+            background: #0f172a;
+            color: white;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .top-bar {
+            background: rgba(255,255,255,0.05);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0;
+        }
+
+            .top-bar .brand {
+                font-weight: 700;
+                color: #60a5fa;
+                font-size: 1rem;
+            }
+
+            .top-bar .info {
+                font-size: 0.85rem;
+                color: rgba(255,255,255,0.6);
+            }
+
+            .top-bar a {
+                color: rgba(255,255,255,0.5);
+                font-size: 0.8rem;
+                text-decoration: none;
+                border: 1px solid rgba(255,255,255,0.2);
+                padding: 4px 12px;
+                border-radius: 20px;
+            }
+
+                .top-bar a:hover {
+                    color: white;
+                    border-color: rgba(255,255,255,0.4);
+                }
+
+        #jitsi-container {
+            flex: 1;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div class="top-bar">
+        <span class="brand"><i class="bi bi-heart-pulse-fill me-1"></i> MyClinicOnline</span>
+        <span class="info">
+            <i class="bi bi-camera-video me-1"></i>
+            Д-р @ViewBag.DoctorName &nbsp;·&nbsp; @ViewBag.PatientName &nbsp;·&nbsp; @ViewBag.AppointmentTime
+        </span>
+        <a href="javascript:window.close()"><i class="bi bi-x-lg me-1"></i>Close</a>
+    </div>
+    <div id="jitsi-container"></div>
+    <script>
+        const api = new JitsiMeetExternalAPI("meet.jit.si", {
+            roomName: "@ViewBag.RoomName",
+            width: "100%",
+            height: "100%",
+            parentNode: document.querySelector('#jitsi-container'),
+            userInfo: { displayName: "@ViewBag.DisplayName" },
+            configOverwrite: {
+                startWithAudioMuted: false,
+                startWithVideoMuted: false,
+                prejoinPageEnabled: false,
+                disableDeepLinking: true
+            },
+            interfaceConfigOverwrite: {
+                SHOW_JITSI_WATERMARK: false,
+                SHOW_BRAND_WATERMARK: false,
+                TOOLBAR_BUTTONS: [
+                    'microphone','camera','desktop','fullscreen',
+                    'fodeviceselection','hangup','chat','settings',
+                    'raisehand','videoquality','tileview'
+                ]
+            }
+        });
+        api.addEventListener('readyToClose', () => window.close());
+    </script>
+</body>
+</html>

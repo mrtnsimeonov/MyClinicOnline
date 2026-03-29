@@ -118,7 +118,9 @@ namespace MyClinicOnline.Controllers
                     SlotId = a.TimeSlotId,
                     DoctorName = a.Doctor.FullName,
                     DateTime = a.TimeSlot.StartTime,
-                    IsPast = a.TimeSlot.StartTime < DateTime.Now
+                    IsPast = a.TimeSlot.StartTime < DateTime.Now,
+                    ConsultationType = a.ConsultationType,
+                    MeetingCode = a.MeetingCode
                 })
                 .ToListAsync();
 

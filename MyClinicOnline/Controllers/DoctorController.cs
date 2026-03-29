@@ -54,7 +54,7 @@ namespace MyClinicOnline.Controllers
             ViewBag.Appointments = await _context.Appointments
                 .Include(a => a.User)
                 .Where(a => a.DoctorId == doctorId)
-                .ToDictionaryAsync(a => a.TimeSlotId, a => a.User);
+                .ToDictionaryAsync(a => a.TimeSlotId, a => a);
 
             return View(slots); // This looks for Views/Doctor/MyTimeSlots.cshtml
         }

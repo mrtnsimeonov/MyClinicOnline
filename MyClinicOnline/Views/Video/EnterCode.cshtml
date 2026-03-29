@@ -1,0 +1,45 @@
+﻿@{
+    ViewData["Title"] = "Join Meeting";
+}
+
+<div class="container py-5" style="min-height: 80vh;">
+    <div class="row justify-content-center">
+        <div class="col-lg-5">
+            <div class="text-center mb-5">
+                <div class="bg-primary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3"
+                     style="width: 80px; height: 80px;">
+                    <i class="bi bi-camera-video-fill text-primary" style="font-size: 2rem;"></i>
+                </div>
+                <h2 class="fw-bold">Join Online Consultation</h2>
+                <p class="text-muted">Enter the meeting code from your confirmation email.</p>
+            </div>
+
+            @if (ViewBag.Error != null)
+            {
+                <div class="alert alert-danger rounded-3 mb-4">
+                    <i class="bi bi-exclamation-triangle me-2"></i>@ViewBag.Error
+                </div>
+            }
+
+            <div class="card border-0 shadow-sm rounded-4 p-4">
+                <form method="get" action="/Video/Join">
+                    <label class="form-label fw-semibold mb-2">Meeting Code</label>
+                    <input name="code"
+                           class="form-control form-control-lg text-center mb-3"
+                           placeholder="e.g. AB3X7P2Q"
+                           maxlength="8"
+                           style="text-transform:uppercase; letter-spacing:6px; font-size:1.4rem; font-weight:700;"
+                           oninput="this.value = this.value.toUpperCase()" />
+                    <button type="submit" class="btn btn-primary btn-lg w-100 fw-bold rounded-3">
+                        <i class="bi bi-camera-video me-2"></i>Join Meeting
+                    </button>
+                </form>
+                <hr class="my-4" />
+                <p class="text-muted small text-center mb-0">
+                    <i class="bi bi-info-circle me-1"></i>
+                    You can join up to 10 minutes before your scheduled time.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>

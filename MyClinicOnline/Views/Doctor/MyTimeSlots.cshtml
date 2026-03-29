@@ -1,6 +1,8 @@
 ﻿@model IEnumerable<MyClinicOnline.Models.TimeSlot>
+@using MyClinicOnline.Models
 @{
-    var appointments = ViewBag.Appointments as Dictionary<int, MyClinicOnline.Models.User>;
+    ViewData["Title"] = "My Schedule";
+    var appointments = ViewBag.Appointments as Dictionary<int, Appointment>;
 }
 
 <div class="container mt-5">
@@ -9,8 +11,9 @@
         <table class="table table-hover mb-0">
             <thead class="bg-light">
                 <tr>
-                    <th>Date & Time</th>
+                    <th>Date &amp; Time</th>
                     <th>Status</th>
+                    <th>Type</th>
                     <th>Patient</th>
                     <th>Action</th>
                 </tr>
@@ -18,31 +21,65 @@
             <tbody>
                 @foreach (var slot in Model)
                 {
+                    var appt = (appointments != null && appointments.ContainsKey(slot.Id))
+                    ? appointments[slot.Id]
+                    : null;
+
                     <tr>
-                        <td>@slot.StartTime.ToString("dd.MM.yyyy HH:mm")</td>
-                        <td>
+                        <td class="align-middle">@slot.StartTime.ToString("dd.MM.yyyy HH:mm")</td>
+                        <td class="align-middle">
                             <span class="badge @(slot.IsBooked ? "bg-danger" : "bg-success")">
                                 @(slot.IsBooked ? "Booked" : "Available")
                             </span>
                         </td>
-                        <td>
-                            @if (slot.IsBooked && appointments != null && appointments.ContainsKey(slot.Id))
+                        <td class="align-middle">
+                            @if (appt != null)
                             {
-                                @($"{appointments[slot.Id].FirstName} {appointments[slot.Id].LastName}")
+                                if (appt.ConsultationType == ConsultationType.Online)
+                                {
+                                    <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 rounded-pill">
+                                        <i class="bi bi-camera-video me-1"></i> Online
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-25 rounded-pill">
+                                        <i class="bi bi-hospital me-1"></i> In-person
+                                    </span>
+                                }
                             }
                             else
                             {
-                                <span>-</span>
+                                <span class="text-muted">-</span>
                             }
                         </td>
-                        <td>
-                            @if (slot.IsBooked)
+                        <td class="align-middle">
+                            @if (appt != null)
                             {
-                                <form asp-action="CancelBooking" method="post">
-                                    <input type="hidden" name="slotId" value="@slot.Id" />
-                                    <button class="btn btn-sm btn-outline-danger">Cancel & Notify</button>
-                                </form>
+                                @($"{appt.User.FirstName} {appt.User.LastName}")
                             }
+                            else
+                            {
+                                <span class="text-muted">-</span>
+                            }
+                        </td>
+                        <td class="align-middle">
+                            <div class="d-flex gap-2">
+                                @if (appt != null && appt.ConsultationType == ConsultationType.Online && appt.MeetingCode != null)
+                                {
+                                    <a href="/Video/Join?code=@appt.MeetingCode" target="_blank"
+                                       class="btn btn-sm btn-success">
+                                        <i class="bi bi-camera-video me-1"></i> Join
+                                    </a>
+                                }
+                                @if (slot.IsBooked)
+                                {
+                                    <form asp-action="CancelBooking" method="post">
+                                        <input type="hidden" name="slotId" value="@slot.Id" />
+                                        <button class="btn btn-sm btn-outline-danger">Cancel &amp; Notify</button>
+                                    </form>
+                                }
+                            </div>
                         </td>
                     </tr>
                 }

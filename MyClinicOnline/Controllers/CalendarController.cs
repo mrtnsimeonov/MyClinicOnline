@@ -67,9 +67,8 @@ namespace MyClinicOnline.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Book(int slotId)
+        public async Task<IActionResult> Book(int slotId, string consultationType)
         {
-            // 1. Fetch the slot AND the Doctor (Need .Include for the name in the email)
             var slot = await _context.TimeSlots
                 .Include(s => s.Doctor)
                 .FirstOrDefaultAsync(s => s.Id == slotId);
@@ -82,7 +81,6 @@ namespace MyClinicOnline.Controllers
                 return RedirectToAction("Index", new { doctorId = slot.DoctorId });
             }
 
-            // 2. Fetch the logged-in User (Exact same logic as AccountController)
             var userIdClaim = User.FindFirst("UserId")?.Value;
             if (userIdClaim == null) return RedirectToAction("Login", "Account");
             int patientId = int.Parse(userIdClaim);
@@ -90,37 +88,71 @@ namespace MyClinicOnline.Controllers
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == patientId);
             if (user == null) return RedirectToAction("Login", "Account");
 
-            // 3. Update Database
+            var type = Enum.TryParse<ConsultationType>(consultationType, out var parsed)
+                ? parsed
+                : ConsultationType.InPerson;
+
+            string? meetingCode = type == ConsultationType.Online
+                ? GenerateMeetingCode()
+                : null;
+
             slot.IsBooked = true;
 
-            // Optional: Add the appointment record if you have an Appointments table
             var appointment = new Appointment
             {
                 DoctorId = slot.DoctorId,
                 UserId = user.Id,
                 TimeSlotId = slot.Id,
-                Status = AppointmentStatus.Confirmed
+                Status = AppointmentStatus.Confirmed,
+                ConsultationType = type,
+                MeetingCode = meetingCode
             };
             _context.Appointments.Add(appointment);
-
             await _context.SaveChangesAsync();
 
-            // 4. SEND EMAIL (Exact same logic/names as your AccountController)
             try
             {
                 string subject = "Потвърждение за записан час";
-                string body = $"Здравейте, успешно записахте час при Д-р {slot.Doctor?.FullName} за {slot.StartTime:dd.MM.yyyy} в {slot.StartTime:HH:mm} ч.";
+                string body;
+
+                if (type == ConsultationType.Online && meetingCode != null)
+                {
+                    var joinLink = $"{Request.Scheme}://{Request.Host}/Video/Join?code={meetingCode}";
+                    body = $"Здравейте {user.FirstName},\n\n" +
+                           $"Записахте онлайн консултация при Д-р {slot.Doctor?.FullName} " +
+                           $"за {slot.StartTime:dd.MM.yyyy} в {slot.StartTime:HH:mm} ч.\n\n" +
+                           $"Вашият код за среща: {meetingCode}\n\n" +
+                           $"Влезте в срещата чрез линка:\n{joinLink}\n\n" +
+                           $"Може също да влезете от сайта с бутон 'Join Meeting' и да въведете кода.\n\n" +
+                           $"Моля влезте до 10 минути преди часа.";
+                }
+                else
+                {
+                    body = $"Здравейте {user.FirstName},\n\n" +
+                           $"Успешно записахте час при Д-р {slot.Doctor?.FullName} " +
+                           $"за {slot.StartTime:dd.MM.yyyy} в {slot.StartTime:HH:mm} ч.";
+                }
 
                 await _emailService.SendEmailAsync(user.Email, subject, body);
             }
             catch (Exception ex)
             {
-                // Logs error to Visual Studio Output if email fails, but doesn't crash the site
                 System.Diagnostics.Debug.WriteLine("Booking Email Error: " + ex.Message);
             }
 
-            TempData["Success"] = "Booked successfully!";
+            TempData["Success"] = type == ConsultationType.Online
+                ? $"Записан! Вашият код за онлайн среща е: {meetingCode}"
+                : "Booked successfully!";
+
             return RedirectToAction("Index", new { doctorId = slot.DoctorId, year = slot.StartTime.Year, month = slot.StartTime.Month });
+        }
+
+        private static string GenerateMeetingCode()
+        {
+            const string chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+            var random = new Random();
+            return new string(Enumerable.Range(0, 8)
+                .Select(_ => chars[random.Next(chars.Length)]).ToArray());
         }
 
         // Creates hourly slots 10:00–16:00 (last start 16:00, ends 17:00)

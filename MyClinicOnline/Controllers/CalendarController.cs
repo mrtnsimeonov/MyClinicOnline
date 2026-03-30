@@ -144,7 +144,8 @@ namespace MyClinicOnline.Controllers
                 ? $"Записан! Вашият код за онлайн среща е: {meetingCode}"
                 : "Booked successfully!";
 
-            return RedirectToAction("Index", new { doctorId = slot.DoctorId, year = slot.StartTime.Year, month = slot.StartTime.Month });
+            // Redirect to symptom form — patient can fill it or skip
+            return RedirectToAction("Symptoms", "AppointmentNote", new { appointmentId = appointment.Id });
         }
 
         private static string GenerateMeetingCode()

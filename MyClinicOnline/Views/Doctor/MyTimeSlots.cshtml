@@ -71,6 +71,19 @@
                                        class="btn btn-sm btn-success">
                                         <i class="bi bi-camera-video me-1"></i> Join
                                     </a>
+                                    @* View symptoms + add notes *@
+                                    <a asp-controller="AppointmentNote" asp-action="DoctorNotes"
+                                       asp-route-appointmentId="@appt.Id"
+                                       class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-clipboard2-pulse"></i> Notes
+                                    </a>
+
+                                    @* Messages *@
+                                    <a asp-controller="Messages" asp-action="Conversation"
+                                       asp-route-appointmentId="@appt.Id"
+                                       class="btn btn-sm btn-outline-secondary">
+                                        <i class="bi bi-chat-dots"></i> Chat
+                                    </a>
                                 }
                                 @if (slot.IsBooked)
                                 {

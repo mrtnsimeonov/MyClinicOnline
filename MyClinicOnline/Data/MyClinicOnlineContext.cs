@@ -16,6 +16,8 @@ namespace MyClinicOnline.Data
         public DbSet<DoctorSpecialty> DoctorSpecialties { get; set; }
         public DbSet<TimeSlot> TimeSlots { get; set; }
         public DbSet<Appointment> Appointments { get; set; }
+        public DbSet<AppointmentNote> AppointmentNotes { get; set; }
+        public DbSet<Message> Messages { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -38,6 +40,18 @@ namespace MyClinicOnline.Data
                 .WithMany()
                 .HasForeignKey(a => a.TimeSlotId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<AppointmentNote>()
+                .HasOne(n => n.Appointment)
+                .WithMany()
+                .HasForeignKey(n => n.AppointmentId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Message>()
+                .HasOne(m => m.Appointment)
+                .WithMany()
+                .HasForeignKey(m => m.AppointmentId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

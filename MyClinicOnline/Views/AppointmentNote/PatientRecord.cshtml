@@ -1,0 +1,94 @@
+﻿@model MyClinicOnline.Models.AppointmentNote
+@{
+    ViewData["Title"] = "Appointment Record";
+    var appt = ViewBag.Appointment as MyClinicOnline.Models.Appointment;
+}
+
+<div class="container py-5" style="max-width: 720px;">
+    <div class="mb-4">
+        <a asp-controller="Booking" asp-action="MyAppointments"
+           class="text-decoration-none text-muted small">
+            <i class="bi bi-arrow-left me-1"></i> Back to My Appointments
+        </a>
+        <h2 class="fw-bold mt-2">Appointment Record</h2>
+        <p class="text-muted">
+            Д-р @appt?.Doctor?.FullName &nbsp;·&nbsp;
+            @appt?.TimeSlot?.StartTime.ToString("dd.MM.yyyy HH:mm")
+        </p>
+    </div>
+
+    @* Patient symptoms section *@
+    <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
+        <h5 class="fw-bold mb-3"><i class="bi bi-clipboard2-pulse text-primary me-2"></i>Your Symptoms</h5>
+        @if (Model == null || string.IsNullOrEmpty(Model.MainComplaint))
+        {
+            <p class="text-muted fst-italic">No symptoms were submitted for this appointment.</p>
+        }
+        else
+        {
+            <dl class="row mb-0">
+                <dt class="col-sm-4 text-muted">Main complaint</dt>
+                <dd class="col-sm-8">@Model.MainComplaint</dd>
+
+                @if (!string.IsNullOrEmpty(Model.Symptoms))
+                {
+                    <dt class="col-sm-4 text-muted">Symptoms</dt>
+                    <dd class="col-sm-8">@Model.Symptoms</dd>
+                }
+                @if (!string.IsNullOrEmpty(Model.SymptomDuration))
+                {
+                    <dt class="col-sm-4 text-muted">Duration</dt>
+                    <dd class="col-sm-8">@Model.SymptomDuration</dd>
+                }
+                @if (!string.IsNullOrEmpty(Model.AdditionalPatientNotes))
+                {
+                    <dt class="col-sm-4 text-muted">Additional notes</dt>
+                    <dd class="col-sm-8">@Model.AdditionalPatientNotes</dd>
+                }
+            </dl>
+        }
+    </div>
+
+    @* Doctor notes section *@
+    <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
+        <h5 class="fw-bold mb-3"><i class="bi bi-heart-pulse text-danger me-2"></i>Doctor's Notes</h5>
+        @if (Model == null || string.IsNullOrEmpty(Model.Diagnosis))
+        {
+            <p class="text-muted fst-italic">The doctor has not added notes yet.</p>
+        }
+        else
+        {
+            <dl class="row mb-0">
+                <dt class="col-sm-4 text-muted">Diagnosis</dt>
+                <dd class="col-sm-8">@Model.Diagnosis</dd>
+
+                @if (!string.IsNullOrEmpty(Model.Prescription))
+                {
+                    <dt class="col-sm-4 text-muted">Prescription</dt>
+                    <dd class="col-sm-8">@Model.Prescription</dd>
+                }
+                @if (!string.IsNullOrEmpty(Model.DoctorNotes))
+                {
+                    <dt class="col-sm-4 text-muted">Notes</dt>
+                    <dd class="col-sm-8">@Model.DoctorNotes</dd>
+                }
+                @if (!string.IsNullOrEmpty(Model.NextSteps))
+                {
+                    <dt class="col-sm-4 text-muted">Next steps</dt>
+                    <dd class="col-sm-8">@Model.NextSteps</dd>
+                }
+                @if (Model.DoctorNotesAddedAt.HasValue)
+                {
+                    <dt class="col-sm-4 text-muted">Added on</dt>
+                    <dd class="col-sm-8 text-muted small">@Model.DoctorNotesAddedAt.Value.ToString("dd.MM.yyyy HH:mm")</dd>
+                }
+            </dl>
+        }
+    </div>
+
+    <a asp-controller="Messages" asp-action="Conversation"
+       asp-route-appointmentId="@appt.Id"
+       class="btn btn-outline-primary rounded-3 fw-bold">
+        <i class="bi bi-chat-dots me-2"></i>Message Doctor
+    </a>
+</div>

@@ -1,0 +1,89 @@
+﻿@model MyClinicOnline.Models.AppointmentNote
+@{
+    ViewData["Title"] = "Add Medical Notes";
+    var appt = ViewBag.Appointment as MyClinicOnline.Models.Appointment;
+}
+
+<div class="container py-5" style="max-width: 720px;">
+    <div class="mb-4">
+        <a asp-controller="Doctor" asp-action="MyTimeSlots"
+           class="text-decoration-none text-muted small">
+            <i class="bi bi-arrow-left me-1"></i> Back to Schedule
+        </a>
+        <h2 class="fw-bold mt-2">Medical Notes</h2>
+        <p class="text-muted">
+            Patient: <strong>@appt?.User?.FirstName @appt?.User?.LastName</strong>
+            &nbsp;·&nbsp; @appt?.TimeSlot?.StartTime.ToString("dd.MM.yyyy HH:mm")
+        </p>
+    </div>
+
+    @* Show patient symptoms read-only *@
+    @{
+        var noteModel = Model;
+    }
+    @if (!string.IsNullOrEmpty(noteModel?.MainComplaint))
+    {
+        <div class="card border-0 bg-light rounded-4 p-4 mb-4">
+            <h6 class="fw-bold text-muted mb-3"><i class="bi bi-person me-2"></i>Patient submitted symptoms</h6>
+            <dl class="row mb-0 small">
+                <dt class="col-sm-4 text-muted">Main complaint</dt>
+                <dd class="col-sm-8">@noteModel.MainComplaint</dd>
+                @if (!string.IsNullOrEmpty(noteModel.Symptoms))
+                {
+                    <dt class="col-sm-4 text-muted">Symptoms</dt>
+                    <dd class="col-sm-8">@noteModel.Symptoms</dd>
+                }
+                @if (!string.IsNullOrEmpty(noteModel.SymptomDuration))
+                {
+                    <dt class="col-sm-4 text-muted">Duration</dt>
+                    <dd class="col-sm-8">@noteModel.SymptomDuration</dd>
+                }
+                @if (!string.IsNullOrEmpty(noteModel.AdditionalPatientNotes))
+                {
+                    <dt class="col-sm-4 text-muted">Additional notes</dt>
+                    <dd class="col-sm-8">@noteModel.AdditionalPatientNotes</dd>
+                }
+            </dl>
+        </div>
+    }
+
+    <div class="card border-0 shadow-sm rounded-4 p-4 p-md-5">
+        <h5 class="fw-bold mb-4"><i class="bi bi-pencil-square text-primary me-2"></i>Your Notes</h5>
+        <form asp-action="DoctorNotes" method="post">
+            <input type="hidden" name="AppointmentId" value="@Model.AppointmentId" />
+            <input type="hidden" name="MainComplaint" value="@Model.MainComplaint" />
+            <input type="hidden" name="Symptoms" value="@Model.Symptoms" />
+            <input type="hidden" name="SymptomDuration" value="@Model.SymptomDuration" />
+            <input type="hidden" name="AdditionalPatientNotes" value="@Model.AdditionalPatientNotes" />
+
+            <div class="mb-4">
+                <label class="form-label fw-semibold">Diagnosis</label>
+                <input name="Diagnosis" value="@Model.Diagnosis"
+                       class="form-control rounded-3"
+                       placeholder="e.g. Hypertension, Type 2 Diabetes..." />
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label fw-semibold">Prescription</label>
+                <textarea name="Prescription" class="form-control rounded-3" rows="3"
+                          placeholder="Medications, dosage, frequency...">@Model.Prescription</textarea>
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label fw-semibold">Clinical notes</label>
+                <textarea name="DoctorNotes" class="form-control rounded-3" rows="3"
+                          placeholder="Observations, test results, remarks...">@Model.DoctorNotes</textarea>
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label fw-semibold">Next steps</label>
+                <textarea name="NextSteps" class="form-control rounded-3" rows="2"
+                          placeholder="Follow-up in 2 weeks, blood test, specialist referral...">@Model.NextSteps</textarea>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-lg fw-bold rounded-3 w-100">
+                <i class="bi bi-floppy me-2"></i>Save Notes
+            </button>
+        </form>
+    </div>
+</div>

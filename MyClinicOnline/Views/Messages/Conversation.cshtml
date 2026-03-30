@@ -1,0 +1,95 @@
+﻿@model IEnumerable<MyClinicOnline.Models.Message>
+@{
+    ViewData["Title"] = "Conversation";
+    var appt = ViewBag.Appointment as MyClinicOnline.Models.Appointment;
+    bool isDoctor = ViewBag.IsDoctor;
+}
+
+<div class="container py-4" style="max-width: 720px;">
+    <div class="mb-3">
+        @if (isDoctor)
+        {
+            <a asp-controller="Doctor" asp-action="MyTimeSlots" class="text-decoration-none text-muted small">
+                <i class="bi bi-arrow-left me-1"></i> Back to Schedule
+            </a>
+        }
+        else
+        {
+            <a asp-controller="Booking" asp-action="MyAppointments" class="text-decoration-none text-muted small">
+                <i class="bi bi-arrow-left me-1"></i> Back to My Appointments
+            </a>
+        }
+        <h4 class="fw-bold mt-2 mb-0">
+            @if (isDoctor)
+            {
+                @($"Chat with {appt?.User?.FirstName} {appt?.User?.LastName}")
+            }
+            else
+            {
+                @($"Chat with Д-р {appt?.Doctor?.FullName}")
+            }
+        </h4>
+        <p class="text-muted small mb-0">@appt?.TimeSlot?.StartTime.ToString("dd.MM.yyyy HH:mm")</p>
+    </div>
+
+    @* Message thread *@
+    <div class="card border-0 shadow-sm rounded-4 mb-3"
+         style="height: 420px; overflow-y: auto; display: flex; flex-direction: column-reverse;" id="msgBox">
+        <div class="p-4">
+            @if (!Model.Any())
+            {
+                <div class="text-center text-muted py-5">
+                    <i class="bi bi-chat-dots display-4 mb-3 d-block"></i>
+                    No messages yet. Start the conversation.
+                </div>
+            }
+            else
+            {
+                @foreach (var msg in Model)
+                {
+                    bool mine = (isDoctor && msg.SentByDoctor) || (!isDoctor && !msg.SentByDoctor);
+                    <div class="d-flex @(mine ? "justify-content-end" : "justify-content-start") mb-3">
+                        <div style="max-width: 75%;">
+                            <div class="rounded-4 px-3 py-2 @(mine ? "bg-primary text-white" : "bg-light text-dark")">
+                                @msg.Content
+                            </div>
+                            <div class="text-muted mt-1 @(mine ? "text-end" : "")" style="font-size: 0.75rem;">
+                                @msg.SentAt.ToString("dd.MM HH:mm")
+                                @if (mine && msg.IsRead)
+                                {
+                                    <i class="bi bi-check2-all ms-1 text-primary"></i>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+        </div>
+    </div>
+
+    @* Message input *@
+    <div class="card border-0 shadow-sm rounded-4 p-3">
+        <form asp-action="Send" method="post" class="d-flex gap-2">
+            <input type="hidden" name="appointmentId" value="@appt?.Id" />
+            <input name="content" id="msgInput"
+                   class="form-control rounded-3 border-0 bg-light"
+                   placeholder="Type a message..."
+                   autocomplete="off" />
+            <button type="submit" class="btn btn-primary rounded-3 px-4 fw-bold">
+                <i class="bi bi-send"></i>
+            </button>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Submit on Enter
+        document.getElementById('msgInput').addEventListener('keydown', function (e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                this.closest('form').submit();
+            }
+        });
+    </script>
+}

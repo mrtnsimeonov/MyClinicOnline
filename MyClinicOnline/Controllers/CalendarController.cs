@@ -158,35 +158,40 @@ namespace MyClinicOnline.Controllers
         // Creates hourly slots 10:00–16:00 (last start 16:00, ends 17:00)
         private void EnsureTimeSlotsForDoctor(int doctorId, DateTime fromDate, DateTime toDate)
         {
-            // Generate from today to end date, only if missing
+            // ONE query to get all existing slot times for this doctor in the range
+            var existingSlots = _context.TimeSlots
+                .Where(ts => ts.DoctorId == doctorId
+                          && ts.StartTime >= fromDate.Date
+                          && ts.StartTime <= toDate.Date.AddDays(1))
+                .Select(ts => ts.StartTime)
+                .ToHashSet(); // fast O(1) lookup
+
+            var newSlots = new List<TimeSlot>();
+
             for (var day = fromDate.Date; day <= toDate.Date; day = day.AddDays(1))
             {
-                // Optional: skip weekends (uncomment if you want)
-                // if (day.DayOfWeek == DayOfWeek.Saturday || day.DayOfWeek == DayOfWeek.Sunday) continue;
-
-                for (int hour = 10; hour < 17; hour++) // 10..16
+                for (int hour = 10; hour < 17; hour++)
                 {
                     var start = day.AddHours(hour);
-                    var end = start.AddHours(1);
 
-                    bool exists = _context.TimeSlots.Any(ts =>
-                        ts.DoctorId == doctorId &&
-                        ts.StartTime == start);
-
-                    if (!exists)
+                    if (!existingSlots.Contains(start)) // no DB call — just a HashSet check
                     {
-                        _context.TimeSlots.Add(new TimeSlot
+                        newSlots.Add(new TimeSlot
                         {
                             DoctorId = doctorId,
                             StartTime = start,
-                            EndTime = end,
+                            EndTime = start.AddHours(1),
                             IsBooked = false
                         });
                     }
                 }
             }
 
-            _context.SaveChanges();
+            if (newSlots.Any())
+            {
+                _context.TimeSlots.AddRange(newSlots); // ONE insert for all new slots
+                _context.SaveChanges();
+            }
         }
     }
 

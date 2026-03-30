@@ -1,0 +1,68 @@
+﻿@model MyClinicOnline.Models.AppointmentNote
+@{
+    ViewData["Title"] = "Tell us about your symptoms";
+    var appt = ViewBag.Appointment as MyClinicOnline.Models.Appointment;
+}
+
+<div class="container py-5" style="max-width: 680px;">
+    <div class="text-center mb-5">
+        <div class="bg-primary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3"
+             style="width: 80px; height: 80px;">
+            <i class="bi bi-clipboard2-pulse-fill text-primary" style="font-size: 2rem;"></i>
+        </div>
+        <h2 class="fw-bold">Your appointment is booked!</h2>
+        <p class="text-muted">
+            Д-р @appt?.Doctor?.FullName &nbsp;·&nbsp;
+            @appt?.TimeSlot?.StartTime.ToString("dd.MM.yyyy HH:mm")
+        </p>
+        <p class="text-muted">Help your doctor prepare by describing your symptoms. This is optional — you can skip it.</p>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4 p-4 p-md-5">
+        <form asp-action="Symptoms" method="post">
+            <input type="hidden" name="AppointmentId" value="@Model.AppointmentId" />
+
+            <div class="mb-4">
+                <label class="form-label fw-semibold">Main complaint <span class="text-muted fw-normal">(required)</span></label>
+                <input name="MainComplaint" value="@Model.MainComplaint"
+                       class="form-control form-control-lg rounded-3"
+                       placeholder="e.g. Headache, back pain, fatigue..." />
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label fw-semibold">Describe your symptoms</label>
+                <textarea name="Symptoms" class="form-control rounded-3" rows="3"
+                          placeholder="Describe what you are experiencing in more detail...">@Model.Symptoms</textarea>
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label fw-semibold">How long have you had these symptoms?</label>
+                <select name="SymptomDuration" class="form-select rounded-3">
+                    <option value="">-- Select --</option>
+                    <option value="Less than a day" selected="@(Model.SymptomDuration == "Less than a day")">Less than a day</option>
+                    <option value="1–3 days" selected="@(Model.SymptomDuration == "1–3 days")">1–3 days</option>
+                    <option value="4–7 days" selected="@(Model.SymptomDuration == "4–7 days")">4–7 days</option>
+                    <option value="1–2 weeks" selected="@(Model.SymptomDuration == "1–2 weeks")">1–2 weeks</option>
+                    <option value="More than 2 weeks" selected="@(Model.SymptomDuration == "More than 2 weeks")">More than 2 weeks</option>
+                    <option value="Chronic / ongoing" selected="@(Model.SymptomDuration == "Chronic / ongoing")">Chronic / ongoing</option>
+                </select>
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label fw-semibold">Anything else the doctor should know?</label>
+                <textarea name="AdditionalPatientNotes" class="form-control rounded-3" rows="2"
+                          placeholder="Allergies, current medications, previous diagnoses...">@Model.AdditionalPatientNotes</textarea>
+            </div>
+
+            <div class="d-flex gap-3 mt-4">
+                <button type="submit" class="btn btn-primary btn-lg fw-bold rounded-3 flex-grow-1">
+                    <i class="bi bi-send me-2"></i>Submit &amp; Continue
+                </button>
+                <a asp-action="Skip" asp-route-appointmentId="@Model.AppointmentId"
+                   class="btn btn-outline-secondary btn-lg rounded-3 px-4">
+                    Skip
+                </a>
+            </div>
+        </form>
+    </div>
+</div>

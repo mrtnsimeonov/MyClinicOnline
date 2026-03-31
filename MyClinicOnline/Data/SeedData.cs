@@ -122,7 +122,30 @@ namespace MyClinicOnline.Data
             EnsureDoctorSpecialty("Dr. Ralitsa Georgieva", pediatrics.Id);
             EnsureDoctorSpecialty("Dr. Hristo Petkov", orthopedics.Id);
 
+            if (!context.Users.Any(u => u.IsAdmin))
+            {
+                context.Users.Add(new User
+                {
+                    FirstName = "Admin",
+                    LastName = "MyClinic",
+                    Email = "admin@myclinic.com",
+                    Password = "Admin123!",
+                    Phone = "0000000000",
+                    Region = "Sofia",
+                    DateOfBirth = new DateTime(1990, 1, 1),
+                    Gender = "Other",
+                    IsAdmin = true
+                });
+                context.SaveChanges();
+            }
+
+            // Auto-approve all seeded doctors (they existed before approval system)
+            var unapprovedSeeded = context.Doctors.Where(d => !d.IsApproved).ToList();
+            foreach (var d in unapprovedSeeded)
+                d.IsApproved = true;
             context.SaveChanges();
+
+           
         }
     }
 }

@@ -5,7 +5,6 @@
 }
 
 <style>
-    /* Reuse the high-end background from your Home page */
     .appointments-wrapper {
         background: radial-gradient(circle at top right, #e9f5ff 0%, #ffffff 50%), linear-gradient(135deg, #f0f7ff 0%, #e0edff 100%);
         position: relative;
@@ -14,7 +13,6 @@
         padding: 60px 0;
     }
 
-        /* Consistent grid pattern */
         .appointments-wrapper::before {
             content: "";
             position: absolute;
@@ -88,6 +86,8 @@
                 {
                     <div class="col-md-6 col-xl-4">
                         <div class="card appointment-card border-0 shadow-sm p-4 h-100">
+
+                            {{-- TOP: date box + status badge --}}
                             <div class="d-flex justify-content-between align-items-start mb-4">
                                 <div class="date-box border">
                                     <span class="d-block fw-bold text-primary fs-5">@app.DateTime.Day</span>
@@ -103,6 +103,7 @@
                                 }
                             </div>
 
+                            {{-- MIDDLE: doctor name, time, consultation type badge --}}
                             <div class="mb-4">
                                 <h5 class="fw-bold mb-1">Д-р @app.DoctorName</h5>
                                 <p class="text-muted small mb-0">
@@ -122,27 +123,33 @@
                                 }
                             </div>
 
+                            {{-- BOTTOM: action buttons --}}
                             <div class="mt-auto d-flex flex-column gap-2">
+
+                                {{-- Join Meeting: only for upcoming online appointments --}}
                                 @if (!app.IsPast && app.ConsultationType == MyClinicOnline.Models.ConsultationType.Online && app.MeetingCode != null)
                                 {
                                     <a href="/Video/Join?code=@app.MeetingCode" target="_blank"
                                        class="btn btn-success w-100 rounded-3 fw-bold py-2">
                                         <i class="bi bi-camera-video me-1"></i> Join Meeting
                                     </a>
-                                    @* View record button — always visible *@
-                                    <a asp-controller="AppointmentNote" asp-action="PatientRecord"
-                                       asp-route-appointmentId="@app.AppointmentId"
-                                       class="btn btn-outline-primary w-100 rounded-3 fw-bold py-2">
-                                        <i class="bi bi-clipboard2-pulse me-1"></i> View Record
-                                    </a>
-
-                                    @* Messages button *@
-                                    <a asp-controller="Messages" asp-action="Conversation"
-                                       asp-route-appointmentId="@app.AppointmentId"
-                                       class="btn btn-outline-secondary w-100 rounded-3 fw-bold py-2">
-                                        <i class="bi bi-chat-dots me-1"></i> Messages
-                                    </a>
                                 }
+
+                                {{-- View Record: always visible for every appointment --}}
+                                <a asp-controller="AppointmentNote" asp-action="PatientRecord"
+                                   asp-route-appointmentId="@app.AppointmentId"
+                                   class="btn btn-outline-primary w-100 rounded-3 fw-bold py-2">
+                                    <i class="bi bi-clipboard2-pulse me-1"></i> View Record
+                                </a>
+
+                                {{-- Messages: always visible for every appointment --}}
+                                <a asp-controller="Messages" asp-action="Conversation"
+                                   asp-route-appointmentId="@app.AppointmentId"
+                                   class="btn btn-outline-secondary w-100 rounded-3 fw-bold py-2">
+                                    <i class="bi bi-chat-dots me-1"></i> Messages
+                                </a>
+
+                                {{-- Cancel: only for upcoming --}}
                                 @if (!app.IsPast)
                                 {
                                     <form asp-action="CancelAppointment" method="post" class="w-100"
@@ -156,9 +163,12 @@
                                 }
                                 else
                                 {
-                                    <button class="btn btn-light w-100 rounded-3 fw-bold py-2" disabled>View Summary</button>
+                                    <button class="btn btn-light w-100 rounded-3 fw-bold py-2" disabled>
+                                        View Summary
+                                    </button>
                                 }
                             </div>
+
                         </div>
                     </div>
                 }

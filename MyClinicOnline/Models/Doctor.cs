@@ -27,6 +27,9 @@ namespace MyClinicOnline.Models
 
         public City? City { get; set; }
 
+        public bool IsApproved { get; set; } = false;  // NEW
+
+
         // --- Navigation Properties (Relationships) ---
 
         // Many-to-Many via DoctorSpecialty join table

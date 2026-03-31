@@ -37,4 +37,11 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
-app.Run(); 
+// Run seed data on startup
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<MyClinicOnlineContext>();
+    SeedData.Initialize(context);
+}
+
+app.Run();

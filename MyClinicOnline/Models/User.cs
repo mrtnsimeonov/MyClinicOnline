@@ -32,6 +32,9 @@ namespace MyClinicOnline.Models
         [Required]
         public string Gender { get; set; }
 
+        public bool IsAdmin { get; set; } = false;
+
         public List<Appointment> Appointments { get; set; } = new();
+
     }
 }

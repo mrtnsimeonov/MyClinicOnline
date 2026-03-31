@@ -124,20 +124,33 @@ Patients can now find and book appointments with you in your city.";
         [HttpPost]
         public async Task<IActionResult> Login(string email, string password)
         {
-            var patient = await _context.Users.FirstOrDefaultAsync(u => u.Email == email && u.Password == password);
-            if (patient != null)
+            // 1. Check admin first
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email && u.Password == password);
+            if (user != null)
             {
-                string initials = $"{patient.FirstName[0]}{patient.LastName[0]}".ToUpper();
-                await SignInUser(patient.Email, initials, "Patient", patient.Id);
+                if (user.IsAdmin)
+                {
+                    await SignInUser(user.Email, "AD", "Admin", user.Id);
+                    return RedirectToAction("Dashboard", "Admin");
+                }
+
+                string initials = $"{user.FirstName[0]}{user.LastName[0]}".ToUpper();
+                await SignInUser(user.Email, initials, "Patient", user.Id);
                 return RedirectToAction("Index", "Home");
             }
 
+            // 2. Check doctor
             var doctor = await _context.Doctors.FirstOrDefaultAsync(d => d.Email == email && d.Password == password);
             if (doctor != null)
             {
+                if (!doctor.IsApproved)
+                {
+                    ViewBag.Error = "Your account is pending admin approval. You will be notified by email.";
+                    return View();
+                }
+
                 var names = doctor.FullName.Split(' ', StringSplitOptions.RemoveEmptyEntries);
                 string initials = names.Length > 1 ? $"{names[0][0]}{names[1][0]}" : $"{names[0][0]}";
-
                 await SignInUser(doctor.Email, initials.ToUpper(), "Doctor", doctor.Id);
                 return RedirectToAction("Index", "Home");
             }

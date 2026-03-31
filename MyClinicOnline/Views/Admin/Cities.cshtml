@@ -1,0 +1,54 @@
+﻿@model IEnumerable<MyClinicOnline.Models.City>
+@{
+    ViewData["Title"] = "Manage Cities";
+}
+
+<div class="container py-4" style="max-width: 700px;">
+    <div class="mb-4">
+        <a asp-action="Dashboard" class="text-decoration-none text-muted small">
+            <i class="bi bi-arrow-left me-1"></i> Dashboard
+        </a>
+        <h2 class="fw-bold mt-1 mb-0">Cities</h2>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success rounded-3">@TempData["Success"]</div>
+    }
+
+    <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
+        <h6 class="fw-bold mb-3">Add New City</h6>
+        <form asp-action="AddCity" method="post" class="d-flex gap-2">
+            <input name="name" class="form-control rounded-3" placeholder="e.g. Stara Zagora" required />
+            <button type="submit" class="btn btn-primary rounded-3 fw-bold px-4">Add</button>
+        </form>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4">
+        <table class="table table-hover mb-0">
+            <thead class="bg-light text-muted small">
+                <tr>
+                    <th class="px-4">City</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var c in Model)
+                {
+                    <tr>
+                        <td class="align-middle fw-medium px-4">@c.Name</td>
+                        <td class="align-middle">
+                            <form asp-action="DeleteCity" method="post"
+                                  onsubmit="return confirm('Delete @c.Name?')">
+                                <input type="hidden" name="cityId" value="@c.Id" />
+                                <button class="btn btn-sm btn-outline-danger rounded-3">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

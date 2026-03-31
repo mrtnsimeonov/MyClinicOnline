@@ -26,10 +26,9 @@ namespace MyClinicOnline.Controllers
 
             var doctors = await _context.Doctors
                 .Include(d => d.Specialties)
-                    .ThenInclude(ds => ds.Specialty)
-                .Where(d =>
-                    d.Specialties.Any(ds =>
-                        ds.Specialty.Name.Contains(specialty)))
+                .ThenInclude(ds => ds.Specialty)
+                .Where(d => d.Specialties.Any(ds => ds.Specialty.Name.Contains(specialty)))
+                .Where(d => d.IsApproved)  // ← ADD THIS LINE
                 .ToListAsync();
 
             ViewBag.Specialty = specialty;

@@ -35,6 +35,7 @@ namespace MyClinicOnline.Controllers
                 .Include(d => d.Specialties).ThenInclude(ds => ds.Specialty)
                 .Where(d => d.CityId == cityId)
                 .Where(d => d.Specialties.Any(ds => ds.SpecialtyId == specialtyId))
+                .Where(d => d.IsApproved)  // ← ADD THIS LINE
                 .OrderBy(d => d.FullName)
                 .ToListAsync();
 

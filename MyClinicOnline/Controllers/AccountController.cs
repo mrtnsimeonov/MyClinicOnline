@@ -100,8 +100,8 @@ namespace MyClinicOnline.Controllers
 
                     string subject = "Successfully Registered - MyClinicOnline";
                     string body = $@"Dear Dr. {doctor.FullName},
-Thank you for joining our platform.
-Patients can now find and book appointments with you in your city.";
+Thank you for registering on MyClinicOnline.
+Your account is currently under review. You will receive a confirmation email once approved by our admin team.";
 
                     await _emailService.SendEmailAsync(doctor.Email, subject, body);
                     return RedirectToAction("Index", "Home");

@@ -38,6 +38,11 @@
                         </li>
                         <li class="nav-item">
                             <a class="nav-link text-dark mx-2 fw-medium" asp-controller="Video" asp-action="Join">
+                                <i class="bi bi-camera-video me-1"></i> Join Meeting
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark mx-2 fw-medium" asp-controller="Video" asp-action="Join">
                                 <i class="bi bi-camera-video me-1"></i>Join Meeting
                             </a>
                         </li>
@@ -126,5 +131,26 @@
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
+    @if (User.Identity.IsAuthenticated)
+    {
+        <script>
+            async function checkUnread() {
+                try {
+                    const res = await fetch('/Messages/UnreadCount');
+                    const count = await res.json();
+                    document.querySelectorAll('.unread-badge').forEach(badge => {
+                        if (count > 0) {
+                            badge.textContent = count;
+                            badge.style.display = 'inline';
+                        } else {
+                            badge.style.display = 'none';
+                        }
+                    });
+                } catch {}
+            }
+            checkUnread();
+            setInterval(checkUnread, 30000);
+        </script>
+    }
 </body>
 </html>

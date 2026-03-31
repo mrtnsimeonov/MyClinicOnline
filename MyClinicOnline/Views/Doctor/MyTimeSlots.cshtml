@@ -27,11 +27,13 @@
 
                     <tr>
                         <td class="align-middle">@slot.StartTime.ToString("dd.MM.yyyy HH:mm")</td>
+
                         <td class="align-middle">
                             <span class="badge @(slot.IsBooked ? "bg-danger" : "bg-success")">
                                 @(slot.IsBooked ? "Booked" : "Available")
                             </span>
                         </td>
+
                         <td class="align-middle">
                             @if (appt != null)
                             {
@@ -53,6 +55,7 @@
                                 <span class="text-muted">-</span>
                             }
                         </td>
+
                         <td class="align-middle">
                             @if (appt != null)
                             {
@@ -63,28 +66,36 @@
                                 <span class="text-muted">-</span>
                             }
                         </td>
+
                         <td class="align-middle">
-                            <div class="d-flex gap-2">
+                            <div class="d-flex gap-2 flex-wrap">
+
+                                {{-- Join: only for online appointments --}}
                                 @if (appt != null && appt.ConsultationType == ConsultationType.Online && appt.MeetingCode != null)
                                 {
                                     <a href="/Video/Join?code=@appt.MeetingCode" target="_blank"
                                        class="btn btn-sm btn-success">
                                         <i class="bi bi-camera-video me-1"></i> Join
                                     </a>
-                                    @* View symptoms + add notes *@
+                                }
+
+                                {{-- Notes + Chat: for ALL booked appointments --}}
+                                @if (appt != null)
+                                {
                                     <a asp-controller="AppointmentNote" asp-action="DoctorNotes"
                                        asp-route-appointmentId="@appt.Id"
                                        class="btn btn-sm btn-outline-primary">
                                         <i class="bi bi-clipboard2-pulse"></i> Notes
                                     </a>
 
-                                    @* Messages *@
                                     <a asp-controller="Messages" asp-action="Conversation"
                                        asp-route-appointmentId="@appt.Id"
                                        class="btn btn-sm btn-outline-secondary">
                                         <i class="bi bi-chat-dots"></i> Chat
                                     </a>
                                 }
+
+                                {{-- Cancel: for any booked slot --}}
                                 @if (slot.IsBooked)
                                 {
                                     <form asp-action="CancelBooking" method="post">
@@ -92,6 +103,7 @@
                                         <button class="btn btn-sm btn-outline-danger">Cancel &amp; Notify</button>
                                     </form>
                                 }
+
                             </div>
                         </td>
                     </tr>

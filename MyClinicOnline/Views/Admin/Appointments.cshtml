@@ -1,0 +1,57 @@
+﻿@model IEnumerable<MyClinicOnline.Models.Appointment>
+@using MyClinicOnline.Models
+@{
+    ViewData["Title"] = "All Appointments";
+}
+
+<div class="container-fluid py-4 px-4">
+    <div class="mb-4">
+        <a asp-action="Dashboard" class="text-decoration-none text-muted small">
+            <i class="bi bi-arrow-left me-1"></i> Dashboard
+        </a>
+        <h2 class="fw-bold mt-1 mb-0">All Appointments (@Model.Count())</h2>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4">
+        <table class="table table-hover mb-0">
+            <thead class="bg-light text-muted small">
+                <tr>
+                    <th class="px-4">Date &amp; Time</th>
+                    <th>Patient</th>
+                    <th>Doctor</th>
+                    <th>Type</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var a in Model)
+                {
+                    <tr>
+                        <td class="align-middle px-4">@a.TimeSlot?.StartTime.ToString("dd.MM.yyyy HH:mm")</td>
+                        <td class="align-middle">@a.User?.FirstName @a.User?.LastName</td>
+                        <td class="align-middle">@a.Doctor?.FullName</td>
+                        <td class="align-middle">
+                            @if (a.ConsultationType == ConsultationType.Online)
+                            {
+                                <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill">
+                                    <i class="bi bi-camera-video me-1"></i> Online
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary bg-opacity-10 text-secondary rounded-pill">
+                                    <i class="bi bi-hospital me-1"></i> In-person
+                                </span>
+                            }
+                        </td>
+                        <td class="align-middle">
+                            <span class="badge bg-success bg-opacity-10 text-success rounded-pill">
+                                @a.Status
+                            </span>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

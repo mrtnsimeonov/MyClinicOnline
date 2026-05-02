@@ -70,7 +70,7 @@
                         <td class="align-middle">
                             <div class="d-flex gap-2 flex-wrap">
 
-                                {{-- Join: only for online appointments --}}
+                                @* Join: only for online appointments *@
                                 @if (appt != null && appt.ConsultationType == ConsultationType.Online && appt.MeetingCode != null)
                                 {
                                     <a href="/Video/Join?code=@appt.MeetingCode" target="_blank"
@@ -79,7 +79,7 @@
                                     </a>
                                 }
 
-                                {{-- Notes + Chat: for ALL booked appointments --}}
+                                @* Notes + Chat: for ALL booked appointments *@
                                 @if (appt != null)
                                 {
                                     <a asp-controller="AppointmentNote" asp-action="DoctorNotes"
@@ -95,7 +95,7 @@
                                     </a>
                                 }
 
-                                {{-- Cancel: for any booked slot --}}
+                                @* Cancel: for any booked slot *@
                                 @if (slot.IsBooked)
                                 {
                                     <form asp-action="CancelBooking" method="post">

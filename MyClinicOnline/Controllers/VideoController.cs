@@ -33,6 +33,21 @@ namespace MyClinicOnline.Controllers
                 return View("EnterCode");
             }
 
+            var userIdClaim = User.FindFirst("UserId")?.Value;
+            if (userIdClaim == null) return RedirectToAction("Login", "Account");
+            int currentUserId = int.Parse(userIdClaim);
+
+            bool isDoctor = User.IsInRole("Doctor");
+            bool isOwner = isDoctor
+                ? appointment.DoctorId == currentUserId
+                : appointment.UserId == currentUserId;
+
+            if (!isOwner)
+            {
+                ViewBag.Error = "Нямате достъп до тази среща.";
+                return View("EnterCode");
+            }
+
             var now = DateTime.Now;
             var start = appointment.TimeSlot.StartTime;
 

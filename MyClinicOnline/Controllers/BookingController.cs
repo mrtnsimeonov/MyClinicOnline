@@ -69,6 +69,8 @@ namespace MyClinicOnline.Controllers
                     return Json(new { success = false, message = "Моля, влезте в профила си." });
 
                 var userIdClaim = User.FindFirst("UserId")?.Value;
+                if (userIdClaim == null)
+                    return Json(new { success = false, message = "Моля, влезте в профила си." });
                 int patientId = int.Parse(userIdClaim);
 
                 var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == patientId);

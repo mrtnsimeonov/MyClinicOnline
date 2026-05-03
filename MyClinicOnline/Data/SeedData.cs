@@ -139,13 +139,25 @@ namespace MyClinicOnline.Data
                 context.SaveChanges();
             }
 
-            // Auto-approve all seeded doctors (they existed before approval system)
-            var unapprovedSeeded = context.Doctors.Where(d => !d.IsApproved).ToList();
+            // Only auto-approve the pre-seeded doctors by name, not new registrations
+            var seededNames = new[]
+            {
+    "Dr. Maria Petrova", "Dr. Ivan Dimitrov", "Dr. Georgi Stoyanov",
+    "Dr. Elena Nikolova", "Dr. Petar Kolev", "Dr. Daniela Hristova",
+    "Dr. Stefan Marinov", "Dr. Nikolay Andreev", "Dr. Ralitsa Georgieva",
+    "Dr. Hristo Petkov"
+};
+
+            var unapprovedSeeded = context.Doctors
+                .Where(d => !d.IsApproved && seededNames.Contains(d.FullName))
+                .ToList();
+
             foreach (var d in unapprovedSeeded)
                 d.IsApproved = true;
+
             context.SaveChanges();
 
-           
+
         }
     }
 }

@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Http;
 using System.Security.Claims;
 using MyClinicOnline.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Microsoft.AspNetCore.Mvc.Routing;
 
 namespace MyClinicOnline.Tests
 {
@@ -27,10 +29,28 @@ namespace MyClinicOnline.Tests
             };
             var principal = new ClaimsPrincipal(new ClaimsIdentity(claims, "MyCookieAuth"));
 
+            var urlHelperFactory = new Mock<IUrlHelperFactory>();
+            urlHelperFactory
+                .Setup(f => f.GetUrlHelper(It.IsAny<ActionContext>()))
+                .Returns(new Mock<IUrlHelper>().Object);
+
+            var tempDataFactory = new Mock<ITempDataDictionaryFactory>();
+            tempDataFactory
+                .Setup(f => f.GetTempData(It.IsAny<HttpContext>()))
+                .Returns(new Mock<ITempDataDictionary>().Object);
+
+            var services = new Mock<IServiceProvider>();
+            services.Setup(s => s.GetService(typeof(IUrlHelperFactory))).Returns(urlHelperFactory.Object);
+            services.Setup(s => s.GetService(typeof(ITempDataDictionaryFactory))).Returns(tempDataFactory.Object);
+
             var controller = new VideoController(context);
             controller.ControllerContext = new ControllerContext
             {
-                HttpContext = new DefaultHttpContext { User = principal }
+                HttpContext = new DefaultHttpContext
+                {
+                    User = principal,
+                    RequestServices = services.Object
+                }
             };
             return controller;
         }
@@ -41,7 +61,11 @@ namespace MyClinicOnline.Tests
             var city = new City { Name = "Sofia" };
             context.Cities.Add(city);
 
-            var doctor = new Doctor { FullName = "Dr. Test", Email = "doc@test.com", CityId = city.Id };
+            var doctor = new Doctor
+            {
+                FullName = "Dr. Test", Email = "doc@test.com",
+                Password = "hash", CityId = city.Id
+            };
             context.Doctors.Add(doctor);
 
             var user = new User
@@ -103,6 +127,7 @@ namespace MyClinicOnline.Tests
         {
             using var context = CreateContext();
             SeedAppointment(context, DateTime.Now, "VALIDCOD");
+            // Use an ID that doesn't match the appointment's UserId
             var controller = CreateController(context, userId: 9999, role: "Patient");
 
             var result = await controller.Join("VALIDCOD");
@@ -116,7 +141,7 @@ namespace MyClinicOnline.Tests
         public async Task Join_ReturnsError_WhenTooEarlyToJoin()
         {
             using var context = CreateContext();
-            // Start is 30 min away — earlier than the allowed -10 min window
+            // Appointment starts in 30 min — outside the allowed -10 min window
             var (_, user, _) = SeedAppointment(context, DateTime.Now.AddMinutes(30), "EARLY001");
             var controller = CreateController(context, userId: user.Id, role: "Patient");
 
@@ -131,7 +156,7 @@ namespace MyClinicOnline.Tests
         public async Task Join_ReturnsError_WhenAppointmentExpired()
         {
             using var context = CreateContext();
-            // Start was 90 min ago — past the 60 min post-start window
+            // Appointment started 90 min ago — past the 60 min post-start window
             var (_, user, _) = SeedAppointment(context, DateTime.Now.AddMinutes(-90), "EXPIRD01");
             var controller = CreateController(context, userId: user.Id, role: "Patient");
 
@@ -146,7 +171,7 @@ namespace MyClinicOnline.Tests
         public async Task Join_ReturnsVideoCall_WhenCodeValidAndOwner()
         {
             using var context = CreateContext();
-            // Start = now, well within the -10/+60 window
+            // start = now, well within the -10 min / +60 min window
             var (_, user, _) = SeedAppointment(context, DateTime.Now, "VALID001");
             var controller = CreateController(context, userId: user.Id, role: "Patient");
 

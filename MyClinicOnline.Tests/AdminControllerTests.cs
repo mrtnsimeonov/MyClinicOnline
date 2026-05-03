@@ -8,6 +8,8 @@ using System.Security.Claims;
 using MyClinicOnline.Data;
 using MyClinicOnline.Services;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Mvc.Routing;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
 
 namespace MyClinicOnline.Tests
 {
@@ -24,11 +26,30 @@ namespace MyClinicOnline.Tests
             var mockEmail = emailService ?? new Mock<IEmailService>().Object;
             var controller = new AdminController(context, mockEmail);
 
+            var urlHelperFactory = new Mock<IUrlHelperFactory>();
+            urlHelperFactory
+                .Setup(f => f.GetUrlHelper(It.IsAny<ActionContext>()))
+                .Returns(new Mock<IUrlHelper>().Object);
+
+            var tempDataFactory = new Mock<ITempDataDictionaryFactory>();
+            tempDataFactory
+                .Setup(f => f.GetTempData(It.IsAny<HttpContext>()))
+                .Returns(new Mock<ITempDataDictionary>().Object);
+
+            var services = new Mock<IServiceProvider>();
+            services.Setup(s => s.GetService(typeof(IUrlHelperFactory))).Returns(urlHelperFactory.Object);
+            services.Setup(s => s.GetService(typeof(ITempDataDictionaryFactory))).Returns(tempDataFactory.Object);
+
             var claims = new[] { new Claim(ClaimTypes.Role, "Admin") };
             var principal = new ClaimsPrincipal(new ClaimsIdentity(claims, "MyCookieAuth"));
+
             controller.ControllerContext = new ControllerContext
             {
-                HttpContext = new DefaultHttpContext { User = principal }
+                HttpContext = new DefaultHttpContext
+                {
+                    User = principal,
+                    RequestServices = services.Object
+                }
             };
             return controller;
         }
@@ -38,17 +59,18 @@ namespace MyClinicOnline.Tests
         {
             using var context = CreateContext();
             var mockEmail = new Mock<IEmailService>();
+
+            var city = new City { Name = "Sofia" };
+            context.Cities.Add(city);
             context.Doctors.Add(new Doctor
             {
                 FullName = "Dr. Pending", Email = "pending@test.com",
-                IsApproved = false
+                Password = "hash", IsApproved = false, CityId = city.Id
             });
             await context.SaveChangesAsync();
 
             var doctorId = context.Doctors.First().Id;
-            var controller = CreateController(context, mockEmail.Object);
-
-            await controller.ApproveDoctor(doctorId);
+            await CreateController(context, mockEmail.Object).ApproveDoctor(doctorId);
 
             Assert.True(context.Doctors.Find(doctorId)!.IsApproved);
             mockEmail.Verify(e => e.SendEmailAsync(
@@ -60,17 +82,18 @@ namespace MyClinicOnline.Tests
         {
             using var context = CreateContext();
             var mockEmail = new Mock<IEmailService>();
+
+            var city = new City { Name = "Sofia" };
+            context.Cities.Add(city);
             context.Doctors.Add(new Doctor
             {
                 FullName = "Dr. Rejected", Email = "rejected@test.com",
-                IsApproved = false
+                Password = "hash", IsApproved = false, CityId = city.Id
             });
             await context.SaveChangesAsync();
 
             var doctorId = context.Doctors.First().Id;
-            var controller = CreateController(context, mockEmail.Object);
-
-            await controller.RejectDoctor(doctorId);
+            await CreateController(context, mockEmail.Object).RejectDoctor(doctorId);
 
             Assert.False(context.Doctors.Any(d => d.Id == doctorId));
             mockEmail.Verify(e => e.SendEmailAsync(
@@ -81,9 +104,8 @@ namespace MyClinicOnline.Tests
         public async Task AddSpecialty_AddsNewSpecialty_WhenNameDoesNotExist()
         {
             using var context = CreateContext();
-            var controller = CreateController(context);
 
-            await controller.AddSpecialty("Ophthalmology");
+            await CreateController(context).AddSpecialty("Ophthalmology");
 
             Assert.True(context.Specialties.Any(s => s.Name == "Ophthalmology"));
         }
@@ -95,8 +117,7 @@ namespace MyClinicOnline.Tests
             context.Specialties.Add(new Specialty { Name = "Cardiology" });
             await context.SaveChangesAsync();
 
-            var controller = CreateController(context);
-            await controller.AddSpecialty("Cardiology");
+            await CreateController(context).AddSpecialty("Cardiology");
 
             Assert.Equal(1, context.Specialties.Count(s => s.Name == "Cardiology"));
         }
@@ -105,9 +126,8 @@ namespace MyClinicOnline.Tests
         public async Task AddCity_AddsNewCity_WhenNameDoesNotExist()
         {
             using var context = CreateContext();
-            var controller = CreateController(context);
 
-            await controller.AddCity("Ruse");
+            await CreateController(context).AddCity("Ruse");
 
             Assert.True(context.Cities.Any(c => c.Name == "Ruse"));
         }
@@ -119,8 +139,7 @@ namespace MyClinicOnline.Tests
             context.Cities.Add(new City { Name = "Sofia" });
             await context.SaveChangesAsync();
 
-            var controller = CreateController(context);
-            await controller.AddCity("Sofia");
+            await CreateController(context).AddCity("Sofia");
 
             Assert.Equal(1, context.Cities.Count(c => c.Name == "Sofia"));
         }

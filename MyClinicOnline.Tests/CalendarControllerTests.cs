@@ -9,6 +9,7 @@ using MyClinicOnline.Data;
 using MyClinicOnline.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Microsoft.AspNetCore.Mvc.Routing;
 
 namespace MyClinicOnline.Tests
 {
@@ -25,14 +26,28 @@ namespace MyClinicOnline.Tests
             var mockEmail = new Mock<IEmailService>();
             var controller = new CalendarController(context, mockEmail.Object);
 
+            var urlHelperFactory = new Mock<IUrlHelperFactory>();
+            urlHelperFactory
+                .Setup(f => f.GetUrlHelper(It.IsAny<ActionContext>()))
+                .Returns(new Mock<IUrlHelper>().Object);
+
+            var services = new Mock<IServiceProvider>();
+            services.Setup(s => s.GetService(typeof(IUrlHelperFactory))).Returns(urlHelperFactory.Object);
+
             var claims = new List<Claim>();
             if (userId.HasValue)
                 claims.Add(new Claim("UserId", userId.Value.ToString()));
 
-            var principal = new ClaimsPrincipal(new ClaimsIdentity(claims, userId.HasValue ? "MyCookieAuth" : ""));
+            var principal = new ClaimsPrincipal(
+                new ClaimsIdentity(claims, userId.HasValue ? "MyCookieAuth" : ""));
+
             controller.ControllerContext = new ControllerContext
             {
-                HttpContext = new DefaultHttpContext { User = principal }
+                HttpContext = new DefaultHttpContext
+                {
+                    User = principal,
+                    RequestServices = services.Object
+                }
             };
             controller.TempData = new Mock<ITempDataDictionary>().Object;
 
@@ -45,7 +60,11 @@ namespace MyClinicOnline.Tests
             context.Cities.Add(city);
             context.SaveChanges();
 
-            var doctor = new Doctor { FullName = "Dr. Test", Email = "doc@test.com", CityId = city.Id, IsApproved = true };
+            var doctor = new Doctor
+            {
+                FullName = "Dr. Test", Email = "doc@test.com",
+                Password = "hash", CityId = city.Id, IsApproved = true
+            };
             context.Doctors.Add(doctor);
             context.SaveChanges();
 
@@ -108,8 +127,7 @@ namespace MyClinicOnline.Tests
 
             await controller.Book(slot.Id, "InPerson");
 
-            var updatedSlot = context.TimeSlots.Find(slot.Id);
-            Assert.True(updatedSlot!.IsBooked);
+            Assert.True(context.TimeSlots.Find(slot.Id)!.IsBooked);
         }
 
         [Fact]

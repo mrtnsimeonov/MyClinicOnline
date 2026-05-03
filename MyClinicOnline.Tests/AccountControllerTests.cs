@@ -9,6 +9,8 @@ using MyClinicOnline.Data;
 using MyClinicOnline.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Mvc.Routing;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
 
 namespace MyClinicOnline.Tests
 {
@@ -25,20 +27,30 @@ namespace MyClinicOnline.Tests
             var mockEmail = new Mock<IEmailService>();
             var controller = new AccountController(context, mockEmail.Object);
 
-            var authServiceMock = new Mock<IAuthenticationService>();
-            authServiceMock
+            var authService = new Mock<IAuthenticationService>();
+            authService
                 .Setup(s => s.SignInAsync(It.IsAny<HttpContext>(), It.IsAny<string>(),
                     It.IsAny<ClaimsPrincipal>(), It.IsAny<AuthenticationProperties?>()))
                 .Returns(Task.CompletedTask);
 
-            var serviceProviderMock = new Mock<IServiceProvider>();
-            serviceProviderMock
-                .Setup(sp => sp.GetService(typeof(IAuthenticationService)))
-                .Returns(authServiceMock.Object);
+            var urlHelperFactory = new Mock<IUrlHelperFactory>();
+            urlHelperFactory
+                .Setup(f => f.GetUrlHelper(It.IsAny<ActionContext>()))
+                .Returns(new Mock<IUrlHelper>().Object);
+
+            var tempDataFactory = new Mock<ITempDataDictionaryFactory>();
+            tempDataFactory
+                .Setup(f => f.GetTempData(It.IsAny<HttpContext>()))
+                .Returns(new Mock<ITempDataDictionary>().Object);
+
+            var services = new Mock<IServiceProvider>();
+            services.Setup(s => s.GetService(typeof(IAuthenticationService))).Returns(authService.Object);
+            services.Setup(s => s.GetService(typeof(IUrlHelperFactory))).Returns(urlHelperFactory.Object);
+            services.Setup(s => s.GetService(typeof(ITempDataDictionaryFactory))).Returns(tempDataFactory.Object);
 
             controller.ControllerContext = new ControllerContext
             {
-                HttpContext = new DefaultHttpContext { RequestServices = serviceProviderMock.Object }
+                HttpContext = new DefaultHttpContext { RequestServices = services.Object }
             };
 
             return controller;
@@ -113,11 +125,15 @@ namespace MyClinicOnline.Tests
         public async Task Login_ReturnsError_WhenDoctorAccountPendingApproval()
         {
             using var context = CreateContext();
+            var city = new City { Name = "Sofia" };
+            context.Cities.Add(city);
+            await context.SaveChangesAsync();
+
             context.Doctors.Add(new Doctor
             {
                 FullName = "Dr. Pending", Email = "pending@test.com",
                 Password = BCrypt.Net.BCrypt.HashPassword("docpass"),
-                IsApproved = false
+                IsApproved = false, CityId = city.Id
             });
             await context.SaveChangesAsync();
 
@@ -132,11 +148,15 @@ namespace MyClinicOnline.Tests
         public async Task Login_RedirectsToHome_WhenApprovedDoctorLogsIn()
         {
             using var context = CreateContext();
+            var city = new City { Name = "Sofia" };
+            context.Cities.Add(city);
+            await context.SaveChangesAsync();
+
             context.Doctors.Add(new Doctor
             {
                 FullName = "Dr. Approved", Email = "approved@test.com",
                 Password = BCrypt.Net.BCrypt.HashPassword("docpass"),
-                IsApproved = true
+                IsApproved = true, CityId = city.Id
             });
             await context.SaveChangesAsync();
 

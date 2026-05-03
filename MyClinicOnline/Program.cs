@@ -37,10 +37,11 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
-// Run seed data on startup
+// Apply pending migrations and seed data on startup
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<MyClinicOnlineContext>();
+    context.Database.Migrate();
     SeedData.Initialize(context);
 }
 

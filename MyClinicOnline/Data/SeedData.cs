@@ -122,7 +122,28 @@ namespace MyClinicOnline.Data
             EnsureDoctorSpecialty("Dr. Ralitsa Georgieva", pediatrics.Id);
             EnsureDoctorSpecialty("Dr. Hristo Petkov", orthopedics.Id);
 
-            if (!context.Users.Any(u => u.IsAdmin))
+            // Fix existing admin OR create if missing
+            var existingAdmin = context.Users.FirstOrDefault(u => u.Email == "admin@myclinic.com");
+            if (existingAdmin != null)
+            {
+                // Fix it if IsAdmin was reset to false by migration
+                if (!existingAdmin.IsAdmin)
+                {
+                    existingAdmin.IsAdmin = true;
+                    context.SaveChanges();
+                }
+
+                // Delete any duplicate admin accounts
+                var duplicates = context.Users
+                    .Where(u => u.Email == "admin@myclinic.com" && u.Id != existingAdmin.Id)
+                    .ToList();
+                if (duplicates.Any())
+                {
+                    context.Users.RemoveRange(duplicates);
+                    context.SaveChanges();
+                }
+            }
+            else
             {
                 context.Users.Add(new User
                 {

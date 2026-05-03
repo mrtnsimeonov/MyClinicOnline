@@ -1,4 +1,5 @@
 ﻿using MyClinicOnline.Models;
+using BCrypt.Net;
 
 namespace MyClinicOnline.Data
 {
@@ -126,12 +127,22 @@ namespace MyClinicOnline.Data
             var existingAdmin = context.Users.FirstOrDefault(u => u.Email == "admin@myclinic.com");
             if (existingAdmin != null)
             {
-                // Fix it if IsAdmin was reset to false by migration
+                bool needsSave = false;
+
                 if (!existingAdmin.IsAdmin)
                 {
                     existingAdmin.IsAdmin = true;
-                    context.SaveChanges();
+                    needsSave = true;
                 }
+
+                // Migrate plain-text password to hash
+                if (!existingAdmin.Password.StartsWith("$2"))
+                {
+                    existingAdmin.Password = BCrypt.Net.BCrypt.HashPassword(existingAdmin.Password);
+                    needsSave = true;
+                }
+
+                if (needsSave) context.SaveChanges();
 
                 // Delete any duplicate admin accounts
                 var duplicates = context.Users
@@ -150,7 +161,7 @@ namespace MyClinicOnline.Data
                     FirstName = "Admin",
                     LastName = "MyClinic",
                     Email = "admin@myclinic.com",
-                    Password = "Admin123!",
+                    Password = BCrypt.Net.BCrypt.HashPassword("Admin123!"),
                     Phone = "0000000000",
                     Region = "Sofia",
                     DateOfBirth = new DateTime(1990, 1, 1),

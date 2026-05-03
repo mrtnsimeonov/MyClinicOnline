@@ -65,7 +65,6 @@ namespace MyClinicOnline.Controllers
             }
 
             var roomName = $"mco-{appointment.Id}-{appointment.MeetingCode}".ToLower();
-            var isDoctor = User.IsInRole("Doctor");
 
             ViewBag.RoomName = roomName;
             ViewBag.DisplayName = isDoctor

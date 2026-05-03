@@ -5,6 +5,8 @@ using MyClinicOnline.Models;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 using MyClinicOnline.Services;
+using BCrypt.Net;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace MyClinicOnline.Controllers
 {
@@ -34,7 +36,7 @@ namespace MyClinicOnline.Controllers
                         FirstName = model.FirstName,
                         LastName = model.LastName,
                         Email = model.Email,
-                        Password = model.Password,
+                        Password = BCrypt.Net.BCrypt.HashPassword(model.Password),
                         Phone = model.Phone,
                         Region = model.Region,
                         DateOfBirth = model.DateOfBirth,
@@ -76,7 +78,7 @@ namespace MyClinicOnline.Controllers
                     {
                         FullName = model.FullName,
                         Email = model.Email,
-                        Password = model.Password,
+                        Password = BCrypt.Net.BCrypt.HashPassword(model.Password),
                         WorksWithNhif = model.WorksWithNhif,
                         CityId = model.CityId
                     };
@@ -104,6 +106,12 @@ Thank you for registering on MyClinicOnline.
 Your account is currently under review. You will receive a confirmation email once approved by our admin team.";
 
                     await _emailService.SendEmailAsync(doctor.Email, subject, body);
+
+                    await _emailService.SendEmailAsync(
+                        "admin@myclinic.com",
+                        "New doctor registration pending approval",
+                        $"Dr. {doctor.FullName} ({doctor.Email}) has registered and is awaiting your approval.");
+
                     return RedirectToAction("Index", "Home");
                 }
                 catch (Exception ex)
@@ -122,12 +130,20 @@ Your account is currently under review. You will receive a confirmation email on
         public IActionResult Login() => View();
 
         [HttpPost]
+        [EnableRateLimiting("login")]
         public async Task<IActionResult> Login(string email, string password)
         {
-            // 1. Check admin first
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email && u.Password == password);
-            if (user != null)
+            // 1. Check users (patients + admin)
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+            if (user != null && VerifyPassword(password, user.Password))
             {
+                // Migrate plain-text password to hash on first login after upgrade
+                if (!user.Password.StartsWith("$2"))
+                {
+                    user.Password = BCrypt.Net.BCrypt.HashPassword(password);
+                    await _context.SaveChangesAsync();
+                }
+
                 if (user.IsAdmin)
                 {
                     await SignInUser(user.Email, "AD", "Admin", user.Id);
@@ -139,10 +155,17 @@ Your account is currently under review. You will receive a confirmation email on
                 return RedirectToAction("Index", "Home");
             }
 
-            // 2. Check doctor
-            var doctor = await _context.Doctors.FirstOrDefaultAsync(d => d.Email == email && d.Password == password);
-            if (doctor != null)
+            // 2. Check doctors
+            var doctor = await _context.Doctors.FirstOrDefaultAsync(d => d.Email == email);
+            if (doctor != null && !string.IsNullOrEmpty(doctor.Password) && VerifyPassword(password, doctor.Password))
             {
+                // Migrate plain-text password to hash on first login after upgrade
+                if (!doctor.Password.StartsWith("$2"))
+                {
+                    doctor.Password = BCrypt.Net.BCrypt.HashPassword(password);
+                    await _context.SaveChangesAsync();
+                }
+
                 if (!doctor.IsApproved)
                 {
                     ViewBag.Error = "Your account is pending admin approval. You will be notified by email.";
@@ -157,6 +180,13 @@ Your account is currently under review. You will receive a confirmation email on
 
             ViewBag.Error = "Грешен имейл или парола";
             return View();
+        }
+
+        private static bool VerifyPassword(string input, string stored)
+        {
+            if (stored.StartsWith("$2"))
+                return BCrypt.Net.BCrypt.Verify(input, stored);
+            return input == stored;
         }
 
         private async Task SignInUser(string email, string initials, string role, int id)

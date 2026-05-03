@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using MyClinicOnline.Data;
 using MyClinicOnline.Models;
 using MyClinicOnline.Services;
+using System.Security.Cryptography;
 
 namespace MyClinicOnline.Controllers
 {
@@ -151,9 +152,7 @@ namespace MyClinicOnline.Controllers
         private static string GenerateMeetingCode()
         {
             const string chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-            var random = new Random();
-            return new string(Enumerable.Range(0, 8)
-                .Select(_ => chars[random.Next(chars.Length)]).ToArray());
+            return RandomNumberGenerator.GetString(chars, 8);
         }
 
         // Creates hourly slots 10:00–16:00 (last start 16:00, ends 17:00)

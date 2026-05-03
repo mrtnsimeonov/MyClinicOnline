@@ -16,7 +16,6 @@
         public AppointmentStatus Status { get; set; }
         public ConsultationType ConsultationType { get; set; }
 
-        // NEW 
         public string? MeetingCode { get; set; }
     }
 }

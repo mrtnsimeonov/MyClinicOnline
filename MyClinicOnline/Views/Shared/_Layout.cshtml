@@ -48,7 +48,7 @@
                         {
                             var initials = User.FindFirst("Initials")?.Value;
                             var isDoctor = User.IsInRole("Doctor");
-                            var isPatient = User.IsInRole("Patient"); // We'll use this for the check
+                            var isPatient = User.IsInRole("Patient");
 
                             <div class="dropdown">
                                 <button class="btn btn-white shadow-sm border rounded-pill px-3 py-1 dropdown-toggle d-flex align-items-center gap-2"
@@ -88,7 +88,7 @@
                                         </li>
                                     }
 
-                                    @if (isPatient) // ONLY SHOWS FOR PATIENTS
+                                    @if (isPatient)
                                     {
                                         <li>
                                             <a class="dropdown-item rounded-3 py-2 d-flex align-items-center profile-link" asp-controller="Booking" asp-action="MyAppointments">
@@ -138,13 +138,34 @@
         </div>
     </footer>
 
+    <!-- Meeting Toast Notification -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 9999;">
+        <div id="meeting-toast" class="toast align-items-center border-0 shadow-lg" role="alert" aria-live="assertive" data-bs-autohide="false">
+            <div class="d-flex">
+                <div class="toast-body p-3">
+                    <div class="d-flex align-items-center mb-1">
+                        <i class="bi bi-camera-video-fill text-primary me-2 fs-5"></i>
+                        <strong id="toast-title" class="text-dark"></strong>
+                    </div>
+                    <p id="toast-body" class="mb-2 small text-muted"></p>
+                    <a id="toast-join" href="#" class="btn btn-primary btn-sm rounded-pill px-3" target="_blank">
+                        <i class="bi bi-box-arrow-up-right me-1"></i>Влез в срещата
+                    </a>
+                </div>
+                <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        </div>
+    </div>
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
+
     @if (User.Identity.IsAuthenticated)
     {
         <script>
+            // --- Unread messages badge ---
             async function checkUnread() {
                 try {
                     const res = await fetch('/Messages/UnreadCount');
@@ -161,6 +182,40 @@
             }
             checkUnread();
             setInterval(checkUnread, 30000);
+
+            @if (User.IsInRole("Doctor"))
+            {
+                    <text>
+                    // --- Upcoming meeting notifications (Doctor only) ---
+                    let lastNotifiedTime = null;
+
+                    async function checkUpcomingMeetings() {
+                        try {
+                            const response = await fetch('/Doctor/UpcomingOnline');
+                            const data = await response.json();
+                            if (data.hasUpcoming && data.time !== lastNotifiedTime) {
+                                lastNotifiedTime = data.time;
+                                showMeetingNotification(
+                                    `Предстояща онлайн среща с ${data.patientName}`,
+                                    `Часът е ${data.time}. Влезте в срещата след минути.`,
+                                    data.joinUrl
+                                );
+                            }
+                        } catch {}
+                    }
+
+                    function showMeetingNotification(title, body, url) {
+                        document.getElementById('toast-title').textContent = title;
+                        document.getElementById('toast-body').textContent = body;
+                        document.getElementById('toast-join').href = url;
+                        const toastEl = document.getElementById('meeting-toast');
+                        bootstrap.Toast.getOrCreateInstance(toastEl).show();
+                    }
+
+                    checkUpcomingMeetings();
+                    setInterval(checkUpcomingMeetings, 60000);
+                    </text>
+            }
         </script>
     }
 </body>

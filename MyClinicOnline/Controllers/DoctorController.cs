@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MyClinicOnline.Data;
+using MyClinicOnline.Models;
 using MyClinicOnline.Services; // Ensure you have the Email Service from previous steps
 
 namespace MyClinicOnline.Controllers
@@ -89,6 +90,40 @@ namespace MyClinicOnline.Controllers
 
             return RedirectToAction("MyTimeSlots");
         }
+
+        [Authorize(Roles = "Doctor")]
+        [HttpGet]
+        public async Task<IActionResult> UpcomingOnline()
+        {
+            var doctorId = int.Parse(User.FindFirst("UserId")!.Value);
+            var now = DateTime.Now;
+            var soon = now.AddMinutes(5);
+
+
+            var upcoming = await _context.Appointments
+                .Include(a => a.TimeSlot)
+                .Include(a => a.User)
+                .FirstOrDefaultAsync(a =>
+                    a.DoctorId == doctorId &&
+                    a.ConsultationType == ConsultationType.Online &&
+                    a.TimeSlot.StartTime >= now &&
+                    a.TimeSlot.StartTime <= soon);
+
+
+            if (upcoming == null)
+                return Json(new { hasUpcoming = false });
+
+
+            return Json(new
+            {
+                hasUpcoming = true,
+                patientName = $"{upcoming.User.FirstName} {upcoming.User.LastName}",
+                time = upcoming.TimeSlot.StartTime.ToString("HH:mm"),
+                joinUrl = $"/Video/Join?code={upcoming.MeetingCode}"
+            });
+        }
+
+
 
     }
 }

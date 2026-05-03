@@ -85,9 +85,12 @@
                     <a asp-controller="Booking" asp-action="Index" class="btn btn-dark px-4 py-2 fw-bold rounded-3 shadow">
                         <i class="bi bi-calendar-plus me-2"></i>Book Now
                     </a>
-                    <a asp-controller="Account" asp-action="RegisterDoctor" class="btn btn-link text-decoration-none text-primary fw-bold">
-                        Register as Doctor <i class="bi bi-arrow-right ms-1"></i>
-                    </a>
+                    @if (!User.IsInRole("Doctor"))
+                    {
+                        <a asp-controller="Account" asp-action="RegisterDoctor" class="btn btn-link text-decoration-none text-primary fw-bold">
+                            Register as Doctor <i class="bi bi-arrow-right ms-1"></i>
+                        </a>
+                    }
                 </div>
             </div>
 

@@ -171,6 +171,28 @@ namespace MyClinicOnline.Data
                 context.SaveChanges();
             }
 
+            // Migrate any remaining plain-text user passwords
+            var usersWithPlainPasswords = context.Users
+                .Where(u => !u.Password.StartsWith("$2"))
+                .ToList();
+
+            foreach (var u in usersWithPlainPasswords)
+                u.Password = BCrypt.Net.BCrypt.HashPassword(u.Password);
+
+            if (usersWithPlainPasswords.Any())
+                context.SaveChanges();
+
+            // Migrate any remaining plain-text doctor passwords
+            var doctorsWithPlainPasswords = context.Doctors
+                .Where(d => d.Password != null && !d.Password.StartsWith("$2"))
+                .ToList();
+
+            foreach (var d in doctorsWithPlainPasswords)
+                d.Password = BCrypt.Net.BCrypt.HashPassword(d.Password);
+
+            if (doctorsWithPlainPasswords.Any())
+                context.SaveChanges();
+
             // Only auto-approve the pre-seeded doctors by name, not new registrations
             var seededNames = new[]
             {

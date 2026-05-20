@@ -169,7 +169,7 @@ namespace MyClinicOnline.Tests
         }
 
         [Fact]
-        public async Task Login_RehashesPlainTextPassword_OnSuccessfulLogin()
+        public async Task Login_ReturnsError_WhenPasswordIsStoredAsPlainText()
         {
             using var context = CreateContext();
             context.Users.Add(new User
@@ -182,10 +182,10 @@ namespace MyClinicOnline.Tests
             await context.SaveChangesAsync();
 
             var controller = CreateController(context);
-            await controller.Login("legacy@test.com", "plaintext123");
+            var result = await controller.Login("legacy@test.com", "plaintext123");
 
-            var user = context.Users.First(u => u.Email == "legacy@test.com");
-            Assert.StartsWith("$2", user.Password);
+            Assert.IsType<ViewResult>(result);
+            Assert.Equal("Грешен имейл или парола", controller.ViewBag.Error);
         }
     }
 }

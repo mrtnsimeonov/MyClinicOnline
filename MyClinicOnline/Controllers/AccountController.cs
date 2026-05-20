@@ -137,13 +137,6 @@ Your account is currently under review. You will receive a confirmation email on
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
             if (user != null && VerifyPassword(password, user.Password))
             {
-                // Migrate plain-text password to hash on first login after upgrade
-                if (!user.Password.StartsWith("$2"))
-                {
-                    user.Password = BCrypt.Net.BCrypt.HashPassword(password);
-                    await _context.SaveChangesAsync();
-                }
-
                 if (user.IsAdmin)
                 {
                     await SignInUser(user.Email, "AD", "Admin", user.Id);
@@ -159,13 +152,6 @@ Your account is currently under review. You will receive a confirmation email on
             var doctor = await _context.Doctors.FirstOrDefaultAsync(d => d.Email == email);
             if (doctor != null && !string.IsNullOrEmpty(doctor.Password) && VerifyPassword(password, doctor.Password))
             {
-                // Migrate plain-text password to hash on first login after upgrade
-                if (!doctor.Password.StartsWith("$2"))
-                {
-                    doctor.Password = BCrypt.Net.BCrypt.HashPassword(password);
-                    await _context.SaveChangesAsync();
-                }
-
                 if (!doctor.IsApproved)
                 {
                     ViewBag.Error = "Your account is pending admin approval. You will be notified by email.";
@@ -183,11 +169,7 @@ Your account is currently under review. You will receive a confirmation email on
         }
 
         private static bool VerifyPassword(string input, string stored)
-        {
-            if (stored.StartsWith("$2"))
-                return BCrypt.Net.BCrypt.Verify(input, stored);
-            return input == stored;
-        }
+            => BCrypt.Net.BCrypt.Verify(input, stored);
 
         private async Task SignInUser(string email, string initials, string role, int id)
         {

@@ -68,7 +68,6 @@ namespace MyClinicOnline.Controllers
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> RegisterDoctor(RegisterDoctorViewModel model)
         {
             if (ModelState.IsValid)

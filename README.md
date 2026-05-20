@@ -1,179 +1,139 @@
-# MyClinicOnline
+# MyClinicOnline — Дипломен проект
 
-A full-stack web application for booking medical appointments online, built with ASP.NET Core 8 MVC. Patients can search for doctors and book in-person or video consultations. Doctors manage their schedule and join video calls directly from the platform. Admins oversee all users, appointments, and platform data.
+**Автор:** Мартин Владимиров Симеонов
+**Училище:** ЧПГДН „СофтУни Будител", гр. София
+**Сесия:** Май-юни 2026
 
-**Live site:** https://mycliniconline-ercfbcbrgdcsgjcw.westeurope-01.azurewebsites.net
-
----
-
-## Features
-
-### Patients
-- Register and log in securely
-- Search for doctors by specialty and city
-- Book in-person or online (video) appointments
-- Fill in a symptom form before each appointment
-- View upcoming and past appointments
-- Join video consultations via a unique meeting code
-- Message doctors through the appointment chat
-- Cancel appointments
-
-### Doctors
-- Register and await admin approval before logging in
-- View their time slot calendar and booked appointments
-- Add medical notes, diagnosis, and prescription after each consultation
-- Join online appointments with in-browser video (Jitsi Meet)
-- Receive toast notifications 5 minutes before an online appointment starts
-- Cancel bookings (patient is notified by email)
-
-### Admin
-- Dashboard with platform statistics (patients, doctors, appointments, online vs in-person breakdown)
-- Approve or reject doctor registrations (doctor notified by email)
-- Delete patients and doctors
-- Manage specialties and cities
-- View all appointments system-wide
+Уеб приложение за управление на медицински прегледи, изградено с ASP.NET
+Core 8 MVC. Пациентите могат да записват часове за преглед на място или
+онлайн (видео консултации). Лекарите управляват графика си и провеждат
+видео срещи направо в браузъра. Администраторът контролира всички
+потребители, часове и номенклатури.
 
 ---
 
-## Tech Stack
+## 🌐 Хоствана версия (препоръчителен начин за преглед)
 
-| Layer | Technology |
-|-------|-----------|
+Приложението работи в Microsoft Azure и не изисква инсталация:
+
+**https://mycliniconline-ercfbcbrgdcsgjcw.westeurope-01.azurewebsites.net**
+
+Това е най-лесният начин да се прегледа функционалността. Не са нужни
+никакви предварителни стъпки — просто отворете линка в браузъра.
+
+### Тестови акаунти
+
+| Роля | Имейл | Парола |
+| --- | --- | --- |
+| Администратор | admin@myclinic.com | Admin123! |
+| Лекар (одобрен) | [запиши имейла на seed лекар, ако има] | [паролата] |
+| Пациент | Регистрирайте се чрез "Register" |
+
+---
+
+## 💻 Локално стартиране (опционално)
+
+### Изисквания
+- .NET 8 SDK — https://dotnet.microsoft.com/download/dotnet/8.0
+- Visual Studio 2022 (Community edition, безплатно) или dotnet CLI
+- Интернет връзка за първоначално сваляне на NuGet пакети
+
+### ⚠️ Важно: Достъп до Azure SQL Database
+Проектът е конфигуриран да работи срещу облачната база данни в Azure.
+По подразбиране Azure SQL firewall блокира външни IP адреси. Ако
+получите грешка при свързване с базата, ползвайте хостнатата версия
+по-горе или се свържете с автора за добавяне на IP в firewall-а.
+
+### Стъпки
+
+1. Сложете флашката в компютъра.
+
+2. Копирайте папката `MyClinicOnline` на локалния твърд диск (препоръчва
+   се, защото Visual Studio работи по-добре локално, отколкото от
+   флашка).
+
+3. Ако работите директно от флашката с Git команди, при първото
+   изпълнение Git ще покаже съобщение за "dubious ownership". Изпълнете
+   командата, която Git ви показва, например:
+   (заменете `D:` с буквата на флашката).
+
+4. Отворете `MyClinicOnline.sln` във Visual Studio 2022.
+
+5. Натиснете **F5** (или въведете `dotnet run` в командния ред от папката
+   `MyClinicOnline`).
+
+6. Браузърът ще се отвори автоматично на `https://localhost:5001`.
+
+При първо стартиране се изпълняват автоматично:
+- `context.Database.Migrate()` — прилага всички EF Core миграции
+- `SeedData.Initialize()` — попълва началните данни (админ, градове,
+  специалности, примерни лекари)
+
+---
+
+## 🧪 Стартиране на тестовете
+Проектът съдържа 25 unit теста с xUnit и Moq, покриващи:
+- Маршрутизация при вход за различните роли
+- Миграция на пароли от plain-text към BCrypt
+- Логика на резервиране (онлайн и на място)
+- Контрол на достъп до видео срещи
+- Административни операции
+
+---
+
+## 🛠 Технологичен стек
+
+| Слой | Технология |
+| --- | --- |
 | Framework | ASP.NET Core 8.0 MVC |
 | ORM | Entity Framework Core 8.0 |
-| Database | Azure SQL Server |
-| Authentication | Cookie-based auth (custom, BCrypt password hashing) |
-| Video calls | Jitsi Meet (browser-based, no install required) |
+| База данни | Azure SQL Database |
+| Автентикация | Cookie-based auth (custom, BCrypt password hashing) |
+| Видео срещи | Jitsi Meet (без инсталация, директно в браузъра) |
 | Frontend | Bootstrap 5, Bootstrap Icons |
-| Email | SMTP via custom `IEmailService` |
-| Testing | xUnit, Moq, EF Core InMemory |
-| Hosting | Azure App Service (West Europe) |
+| Имейли | SMTP чрез custom IEmailService |
+| Тестове | xUnit, Moq, EF Core InMemory |
+| Хостинг | Azure App Service (West Europe) |
 
 ---
 
-## Getting Started
-
-### Prerequisites
-
-- [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
-- SQL Server (local) or an Azure SQL database
-- A valid SMTP account for email sending (optional for local dev)
-
-### Installation
-
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/mrtnsimeonov/MyClinicOnline.git
-   cd MyClinicOnline
-   ```
-
-2. Update the connection string in `MyClinicOnline/appsettings.json`:
-   ```json
-   "ConnectionStrings": {
-     "DefaultConnection": "Server=YOUR_SERVER;Database=MyClinicDB;User ID=...;Password=...;"
-   }
-   ```
-
-3. Apply migrations and seed the database — this happens automatically on first startup via `context.Database.Migrate()`.
-
-4. Run the application:
-   ```bash
-   cd MyClinicOnline
-   dotnet run
-   ```
-
-The app seeds an admin account and sample doctors automatically on first launch.
-
----
-
-## Default Admin Account
-
-| Field | Value |
-|-------|-------|
-| Email | `admin@myclinic.com` |
-| Password | `Admin123!` |
-
-> The password is stored as a BCrypt hash. On first login the hash is generated automatically by the seed process.
-
----
-
-## User Roles
-
-| Role | How to get it |
-|------|--------------|
-| **Patient** | Self-register via the Register page |
-| **Doctor** | Register via Register as Doctor — requires admin approval |
-| **Admin** | Seeded automatically; only one admin account |
-
----
-
-## Online Appointments
-
-When a patient books an **Online** consultation:
-- An 8-character cryptographically secure meeting code is generated
-- The code is emailed to the patient with a direct join link
-- Both the patient and doctor see a **Join Meeting** button in their appointment list, active from 10 minutes before until 60 minutes after the start time
-- The video room is powered by Jitsi Meet — no plugin or account needed
-
----
-
-## Project Structure
-
-```
+## 📁 Структура на проекта
 MyClinicOnline/
-├── Controllers/         # MVC controllers (Account, Admin, Booking, Calendar, Doctor, Video, ...)
+├── Controllers/         Контролери (Account, Admin, Booking, Calendar, ...)
 ├── Data/
 │   ├── MyClinicOnlineContext.cs
 │   └── SeedData.cs
-├── Migrations/          # EF Core migrations
-├── Models/              # Entity and view models
-├── Services/            # IEmailService
-├── Views/               # Razor views per controller
-└── wwwroot/             # Static assets
-
+├── Migrations/          EF Core миграции
+├── Models/              Entity и ViewModel класове
+├── Services/            IEmailService
+├── Views/               Razor изгледи
+└── wwwroot/             Статични файлове
 MyClinicOnline.Tests/
 ├── AccountControllerTests.cs
 ├── AdminControllerTests.cs
 ├── BookingTests.cs
 ├── CalendarControllerTests.cs
 └── VideoControllerTests.cs
-```
 
 ---
 
-## Running the Tests
+## 🔒 Сигурност
 
-```bash
-cd MyClinicOnline.Tests
-dotnet test
-```
-
-25 tests covering login routing, BCrypt migration, online/in-person booking logic, video call access control, and admin operations.
-
----
-
-## Deployment
-
-The app is deployed to **Azure App Service** using Visual Studio's Web Deploy publish profile.
-
-On every startup:
-1. `context.Database.Migrate()` applies any pending EF Core migrations to Azure SQL
-2. `SeedData.Initialize()` ensures the admin account and sample doctors exist
-
-To redeploy after changes: right-click the project in Visual Studio → **Publish** → **Publish**.
+- Паролите се хешират с **BCrypt** (work factor 11). Заварени пароли в
+  открит текст се мигрират автоматично към BCrypt при следващ вход.
+- Входната форма е ограничена до **10 опита/минута/IP** срещу
+  brute-force атаки.
+- Видео стаите са защитени — само пациентът и лекарят, записани за
+  конкретен час, могат да се присъединят.
+- Всички администраторски маршрути са защитени с
+  `[Authorize(Roles = "Admin")]`.
+- Всички лекарски маршрути са защитени с `[Authorize(Roles = "Doctor")]`.
+- CSRF защита чрез AntiForgeryToken на всички POST форми.
+- Принудително пренасочване към HTTPS.
 
 ---
 
-## Security Notes
+## 📜 Лиценз
 
-- Passwords are hashed with **BCrypt** (work factor 11). Plain-text legacy passwords are auto-migrated to BCrypt on the user's next login.
-- Login is rate-limited to **10 attempts per minute** per IP.
-- Video meeting rooms are validated — only the patient and doctor of a given appointment can join.
-- All admin routes are protected with `[Authorize(Roles = "Admin")]`.
-- Doctor routes are protected with `[Authorize(Roles = "Doctor")]`.
-
----
-
-## License
-
-This project is for educational purposes.
+Проектът е разработен с образователна цел в рамките на дипломен проект
+към ЧПГДН „СофтУни Будител". 

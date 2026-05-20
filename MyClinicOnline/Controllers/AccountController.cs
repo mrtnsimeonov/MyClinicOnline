@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using MyClinicOnline.Data;
 using MyClinicOnline.Models;
+using MyClinicOnline.ViewModels;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 using MyClinicOnline.Services;
@@ -169,7 +170,10 @@ Your account is currently under review. You will receive a confirmation email on
         }
 
         private static bool VerifyPassword(string input, string stored)
-            => BCrypt.Net.BCrypt.Verify(input, stored);
+        {
+            try { return BCrypt.Net.BCrypt.Verify(input, stored); }
+            catch { return false; }
+        }
 
         private async Task SignInUser(string email, string initials, string role, int id)
         {

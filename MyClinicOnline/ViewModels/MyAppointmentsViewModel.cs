@@ -1,4 +1,6 @@
-﻿namespace MyClinicOnline.Models
+using MyClinicOnline.Models;
+
+namespace MyClinicOnline.ViewModels
 {
     public class MyAppointmentViewModel
     {

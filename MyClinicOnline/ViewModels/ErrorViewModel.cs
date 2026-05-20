@@ -1,4 +1,4 @@
-namespace MyClinicOnline.Models
+namespace MyClinicOnline.ViewModels
 {
     public class ErrorViewModel
     {

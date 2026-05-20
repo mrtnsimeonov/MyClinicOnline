@@ -1,6 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 
-namespace MyClinicOnline.Models
+namespace MyClinicOnline.ViewModels
 {
     public class RegisterViewModel
     {

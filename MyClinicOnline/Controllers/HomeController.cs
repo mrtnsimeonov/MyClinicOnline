@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using MyClinicOnline.Models;
+using MyClinicOnline.ViewModels;
 using System.Diagnostics;
 
 namespace MyClinicOnline.Controllers

@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using MyClinicOnline.Data;
 using MyClinicOnline.Models;
+using MyClinicOnline.ViewModels;
 using MyClinicOnline.Services;
 
 namespace MyClinicOnline.Controllers

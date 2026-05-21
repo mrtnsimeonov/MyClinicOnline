@@ -191,7 +191,7 @@ namespace MyClinicOnline.Controllers
             return RandomNumberGenerator.GetString(chars, 8);
         }
 
-        // Creates hourly slots 10:00–16:00 (last start 16:00, ends 17:00)
+        // Creates hourly slots 10:00–20:00 (last start 20:00, ends 21:00)
         private void EnsureTimeSlotsForDoctor(int doctorId, DateTime fromDate, DateTime toDate)
         {
             // ONE query to get all existing slot times for this doctor in the range
@@ -206,7 +206,7 @@ namespace MyClinicOnline.Controllers
 
             for (var day = fromDate.Date; day <= toDate.Date; day = day.AddDays(1))
             {
-                for (int hour = 10; hour < 17; hour++)
+                for (int hour = 10; hour < 21; hour++)
                 {
                     var start = day.AddHours(hour);
 

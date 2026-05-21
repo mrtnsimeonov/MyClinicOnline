@@ -111,6 +111,7 @@ namespace MyClinicOnline.Controllers
             _context.Appointments.Add(appointment);
             await _context.SaveChangesAsync();
 
+            // Patient email
             try
             {
                 string subject = "Потвърждение за записан час";
@@ -135,33 +136,45 @@ namespace MyClinicOnline.Controllers
                 }
 
                 await _emailService.SendEmailAsync(user.Email, subject, body);
-
-                if (type == ConsultationType.Online && meetingCode != null && slot.Doctor?.Email != null)
-                {
-                    var joinLink = $"{Request.Scheme}://{Request.Host}/Video/Join?code={meetingCode}";
-                    await _emailService.SendEmailAsync(
-                        slot.Doctor.Email,
-                        "Нова онлайн консултация",
-                        $"Д-р {slot.Doctor.FullName},\n\n" +
-                        $"Имате нова онлайн консултация с {user.FirstName} {user.LastName} " +
-                        $"за {slot.StartTime:dd.MM.yyyy} в {slot.StartTime:HH:mm} ч.\n\n" +
-                        $"Код за среща: {meetingCode}\n\n" +
-                        $"Влезте в срещата чрез линка:\n{joinLink}\n\n" +
-                        $"Можете също да влезете от Вашия график в сайта.");
-                }
-                else if (type == ConsultationType.InPerson && slot.Doctor?.Email != null)
-                {
-                    await _emailService.SendEmailAsync(
-                        slot.Doctor.Email,
-                        "Нов записан час",
-                        $"Д-р {slot.Doctor.FullName},\n\n" +
-                        $"Имате нов записан час с {user.FirstName} {user.LastName} " +
-                        $"за {slot.StartTime:dd.MM.yyyy} в {slot.StartTime:HH:mm} ч.");
-                }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine("Booking Email Error: " + ex.Message);
+                System.Diagnostics.Debug.WriteLine("Patient Email Error: " + ex.Message);
+            }
+
+            // Doctor email — same structure as patient email
+            if (slot.Doctor?.Email != null)
+            {
+                try
+                {
+                    string doctorSubject;
+                    string doctorBody;
+
+                    if (type == ConsultationType.Online && meetingCode != null)
+                    {
+                        var joinLink = $"{Request.Scheme}://{Request.Host}/Video/Join?code={meetingCode}";
+                        doctorSubject = "Нова онлайн консултация";
+                        doctorBody = $"Д-р {slot.Doctor.FullName},\n\n" +
+                                     $"Имате нова онлайн консултация с {user.FirstName} {user.LastName} " +
+                                     $"за {slot.StartTime:dd.MM.yyyy} в {slot.StartTime:HH:mm} ч.\n\n" +
+                                     $"Код за среща: {meetingCode}\n\n" +
+                                     $"Влезте в срещата чрез линка:\n{joinLink}\n\n" +
+                                     $"Можете също да влезете от Вашия график в сайта.";
+                    }
+                    else
+                    {
+                        doctorSubject = "Нов записан час";
+                        doctorBody = $"Д-р {slot.Doctor.FullName},\n\n" +
+                                     $"Имате нов записан час с {user.FirstName} {user.LastName} " +
+                                     $"за {slot.StartTime:dd.MM.yyyy} в {slot.StartTime:HH:mm} ч.";
+                    }
+
+                    await _emailService.SendEmailAsync(slot.Doctor.Email, doctorSubject, doctorBody);
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine("Doctor Email Error: " + ex.Message);
+                }
             }
 
             TempData["Success"] = type == ConsultationType.Online

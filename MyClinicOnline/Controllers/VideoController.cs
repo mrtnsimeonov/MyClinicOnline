@@ -125,7 +125,11 @@ namespace MyClinicOnline.Controllers
             using var rsa = RSA.Create();
             rsa.ImportFromPem(privateKeyPem);
 
-            var securityKey = new RsaSecurityKey(rsa) { KeyId = apiKeyId };
+            var securityKey = new RsaSecurityKey(rsa)
+            {
+                KeyId = apiKeyId,
+                CryptoProviderFactory = new CryptoProviderFactory { CacheSignatureProviders = false }
+            };
             var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.RsaSha256);
 
             var now = DateTimeOffset.UtcNow;

@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authentication;
 using MyClinicOnline.Services;
 using BCrypt.Net;
 using Microsoft.AspNetCore.RateLimiting;
+using System.Security.Cryptography;
 
 namespace MyClinicOnline.Controllers
 {
@@ -135,37 +136,198 @@ Your account is currently under review. You will receive a confirmation email on
         {
             // 1. Check users (patients + admin)
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
-            if (user != null && VerifyPassword(password, user.Password))
+            if (user != null)
             {
-                if (user.IsAdmin)
+                if (user.LockoutUntil.HasValue && user.LockoutUntil > DateTime.UtcNow)
                 {
-                    await SignInUser(user.Email, "AD", "Admin", user.Id);
-                    return RedirectToAction("Dashboard", "Admin");
+                    var remaining = (int)Math.Ceiling((user.LockoutUntil.Value - DateTime.UtcNow).TotalMinutes);
+                    ViewBag.Error = $"Акаунтът е заключен. Опитайте отново след {remaining} минути.";
+                    return View();
                 }
 
-                string initials = $"{user.FirstName[0]}{user.LastName[0]}".ToUpper();
-                await SignInUser(user.Email, initials, "Patient", user.Id);
-                return RedirectToAction("Index", "Home");
+                if (VerifyPassword(password, user.Password))
+                {
+                    user.FailedLoginAttempts = 0;
+                    user.LockoutUntil = null;
+                    await _context.SaveChangesAsync();
+
+                    if (user.IsAdmin)
+                    {
+                        await SignInUser(user.Email, "AD", "Admin", user.Id);
+                        return RedirectToAction("Dashboard", "Admin");
+                    }
+
+                    string initials = $"{user.FirstName[0]}{user.LastName[0]}".ToUpper();
+                    await SignInUser(user.Email, initials, "Patient", user.Id);
+                    return RedirectToAction("Index", "Home");
+                }
+
+                user.FailedLoginAttempts++;
+                if (user.FailedLoginAttempts >= 5)
+                {
+                    user.LockoutUntil = DateTime.UtcNow.AddMinutes(15);
+                    user.FailedLoginAttempts = 0;
+                    await _context.SaveChangesAsync();
+                    ViewBag.Error = "Твърде много грешни опити. Акаунтът е заключен за 15 минути.";
+                    return View();
+                }
+                await _context.SaveChangesAsync();
             }
 
             // 2. Check doctors
             var doctor = await _context.Doctors.FirstOrDefaultAsync(d => d.Email == email);
-            if (doctor != null && !string.IsNullOrEmpty(doctor.Password) && VerifyPassword(password, doctor.Password))
+            if (doctor != null && !string.IsNullOrEmpty(doctor.Password))
             {
-                if (!doctor.IsApproved)
+                if (doctor.LockoutUntil.HasValue && doctor.LockoutUntil > DateTime.UtcNow)
                 {
-                    ViewBag.Error = "Your account is pending admin approval. You will be notified by email.";
+                    var remaining = (int)Math.Ceiling((doctor.LockoutUntil.Value - DateTime.UtcNow).TotalMinutes);
+                    ViewBag.Error = $"Акаунтът е заключен. Опитайте отново след {remaining} минути.";
                     return View();
                 }
 
-                var names = doctor.FullName.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-                string initials = names.Length > 1 ? $"{names[0][0]}{names[1][0]}" : $"{names[0][0]}";
-                await SignInUser(doctor.Email, initials.ToUpper(), "Doctor", doctor.Id);
-                return RedirectToAction("Index", "Home");
+                if (VerifyPassword(password, doctor.Password))
+                {
+                    doctor.FailedLoginAttempts = 0;
+                    doctor.LockoutUntil = null;
+                    await _context.SaveChangesAsync();
+
+                    if (!doctor.IsApproved)
+                    {
+                        ViewBag.Error = "Your account is pending admin approval. You will be notified by email.";
+                        return View();
+                    }
+
+                    var names = doctor.FullName.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                    string initials = names.Length > 1 ? $"{names[0][0]}{names[1][0]}" : $"{names[0][0]}";
+                    await SignInUser(doctor.Email, initials.ToUpper(), "Doctor", doctor.Id);
+                    return RedirectToAction("Index", "Home");
+                }
+
+                doctor.FailedLoginAttempts++;
+                if (doctor.FailedLoginAttempts >= 5)
+                {
+                    doctor.LockoutUntil = DateTime.UtcNow.AddMinutes(15);
+                    doctor.FailedLoginAttempts = 0;
+                    await _context.SaveChangesAsync();
+                    ViewBag.Error = "Твърде много грешни опити. Акаунтът е заключен за 15 минути.";
+                    return View();
+                }
+                await _context.SaveChangesAsync();
             }
 
             ViewBag.Error = "Грешен имейл или парола";
             return View();
+        }
+
+        [HttpGet]
+        public IActionResult ForgotPassword() => View();
+
+        [HttpPost]
+        public async Task<IActionResult> ForgotPassword(string email)
+        {
+            var token = Convert.ToHexString(RandomNumberGenerator.GetBytes(32));
+            var expiry = DateTime.UtcNow.AddHours(1);
+
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+            if (user != null)
+            {
+                user.PasswordResetToken = token;
+                user.PasswordResetExpiry = expiry;
+                await _context.SaveChangesAsync();
+                var link = Url.Action("ResetPassword", "Account", new { token, email }, Request.Scheme);
+                await _emailService.SendEmailAsync(email, "Възстановяване на парола – MyClinicOnline",
+                    $"Здравейте,\n\nНатиснете линка по-долу за да нулирате паролата си:\n{link}\n\nЛинкът е валиден 1 час.\n\nАко не сте поискали смяна на парола, игнорирайте този имейл.");
+            }
+            else
+            {
+                var doctor = await _context.Doctors.FirstOrDefaultAsync(d => d.Email == email);
+                if (doctor != null)
+                {
+                    doctor.PasswordResetToken = token;
+                    doctor.PasswordResetExpiry = expiry;
+                    await _context.SaveChangesAsync();
+                    var link = Url.Action("ResetPassword", "Account", new { token, email }, Request.Scheme);
+                    await _emailService.SendEmailAsync(email, "Възстановяване на парола – MyClinicOnline",
+                        $"Д-р {doctor.FullName},\n\nНатиснете линка по-долу за да нулирате паролата си:\n{link}\n\nЛинкът е валиден 1 час.\n\nАко не сте поискали смяна на парола, игнорирайте този имейл.");
+                }
+            }
+
+            ViewBag.Message = "Ако имейлът съществува в системата, ще получите линк за нулиране на паролата.";
+            return View();
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ResetPassword(string token, string email)
+        {
+            bool valid = await TokenIsValid(token, email);
+            if (!valid)
+            {
+                ViewBag.Error = "Линкът е невалиден или е изтекъл.";
+                return View("ForgotPassword");
+            }
+            ViewBag.Token = token;
+            ViewBag.Email = email;
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ResetPassword(string token, string email, string newPassword, string confirmPassword)
+        {
+            if (newPassword != confirmPassword)
+            {
+                ViewBag.Token = token;
+                ViewBag.Email = email;
+                ViewBag.Error = "Паролите не съвпадат.";
+                return View();
+            }
+            if (newPassword.Length < 6)
+            {
+                ViewBag.Token = token;
+                ViewBag.Email = email;
+                ViewBag.Error = "Паролата трябва да е поне 6 символа.";
+                return View();
+            }
+
+            var hashed = BCrypt.Net.BCrypt.HashPassword(newPassword);
+
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email && u.PasswordResetToken == token);
+            if (user != null && user.PasswordResetExpiry > DateTime.UtcNow)
+            {
+                user.Password = hashed;
+                user.PasswordResetToken = null;
+                user.PasswordResetExpiry = null;
+                user.FailedLoginAttempts = 0;
+                user.LockoutUntil = null;
+                await _context.SaveChangesAsync();
+                TempData["LoginMessage"] = "Паролата е успешно променена. Можете да влезете.";
+                return RedirectToAction("Login");
+            }
+
+            var doctor = await _context.Doctors.FirstOrDefaultAsync(d => d.Email == email && d.PasswordResetToken == token);
+            if (doctor != null && doctor.PasswordResetExpiry > DateTime.UtcNow)
+            {
+                doctor.Password = hashed;
+                doctor.PasswordResetToken = null;
+                doctor.PasswordResetExpiry = null;
+                doctor.FailedLoginAttempts = 0;
+                doctor.LockoutUntil = null;
+                await _context.SaveChangesAsync();
+                TempData["LoginMessage"] = "Паролата е успешно променена. Можете да влезете.";
+                return RedirectToAction("Login");
+            }
+
+            ViewBag.Token = token;
+            ViewBag.Email = email;
+            ViewBag.Error = "Линкът е невалиден или е изтекъл.";
+            return View();
+        }
+
+        private async Task<bool> TokenIsValid(string token, string email)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email && u.PasswordResetToken == token);
+            if (user != null && user.PasswordResetExpiry > DateTime.UtcNow) return true;
+            var doctor = await _context.Doctors.FirstOrDefaultAsync(d => d.Email == email && d.PasswordResetToken == token);
+            return doctor != null && doctor.PasswordResetExpiry > DateTime.UtcNow;
         }
 
         private static bool VerifyPassword(string input, string stored)

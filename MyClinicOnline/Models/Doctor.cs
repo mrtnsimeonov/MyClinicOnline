@@ -27,8 +27,12 @@ namespace MyClinicOnline.Models
 
         public City? City { get; set; }
 
-        public bool IsApproved { get; set; } = false;  // NEW
+        public bool IsApproved { get; set; } = false;
 
+        public int FailedLoginAttempts { get; set; } = 0;
+        public DateTime? LockoutUntil { get; set; }
+        public string? PasswordResetToken { get; set; }
+        public DateTime? PasswordResetExpiry { get; set; }
 
         // --- Navigation Properties (Relationships) ---
 

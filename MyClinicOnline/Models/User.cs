@@ -34,6 +34,11 @@ namespace MyClinicOnline.Models
 
         public bool IsAdmin { get; set; } = false;
 
+        public int FailedLoginAttempts { get; set; } = 0;
+        public DateTime? LockoutUntil { get; set; }
+        public string? PasswordResetToken { get; set; }
+        public DateTime? PasswordResetExpiry { get; set; }
+
         public List<Appointment> Appointments { get; set; } = new();
 
     }

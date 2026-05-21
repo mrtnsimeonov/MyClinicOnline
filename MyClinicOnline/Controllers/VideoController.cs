@@ -1,8 +1,12 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using MyClinicOnline.Data;
 using MyClinicOnline.Models;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Security.Cryptography;
 
 namespace MyClinicOnline.Controllers
 {
@@ -10,10 +14,12 @@ namespace MyClinicOnline.Controllers
     public class VideoController : Controller
     {
         private readonly MyClinicOnlineContext _context;
+        private readonly IConfiguration _configuration;
 
-        public VideoController(MyClinicOnlineContext context)
+        public VideoController(MyClinicOnlineContext context, IConfiguration configuration)
         {
             _context = context;
+            _configuration = configuration;
         }
 
         public async Task<IActionResult> Join(string? code)
@@ -68,17 +74,88 @@ namespace MyClinicOnline.Controllers
                 return View("EnterCode");
             }
 
+            var appId = _configuration["JitsiSettings:AppId"]!;
+            var apiKeyId = _configuration["JitsiSettings:ApiKeyId"]!;
+            var privateKeyPem = _configuration["JitsiSettings:PrivateKey"]!;
+
             var roomName = $"mco-{appointment.Id}-{appointment.MeetingCode}".ToLower();
 
-            ViewBag.RoomName = roomName;
-            ViewBag.DisplayName = isDoctor
-                ? $"Д-р {appointment.Doctor.FullName}"
-                : $"{appointment.User.FirstName} {appointment.User.LastName}";
+            string displayName, userEmail, userId;
+            if (isDoctor)
+            {
+                displayName = $"Д-р {appointment.Doctor.FullName}";
+                userEmail = appointment.Doctor.Email;
+                userId = $"doctor-{appointment.DoctorId}";
+            }
+            else
+            {
+                displayName = $"{appointment.User.FirstName} {appointment.User.LastName}";
+                userEmail = appointment.User.Email;
+                userId = $"patient-{appointment.UserId}";
+            }
+
+            var jwtToken = GenerateJaaSToken(
+                appId, apiKeyId, privateKeyPem,
+                roomName, userId, displayName, userEmail, isDoctor);
+
+            ViewBag.RoomName = $"{appId}/{roomName}";
+            ViewBag.JwtToken = jwtToken;
+            ViewBag.DisplayName = displayName;
             ViewBag.AppointmentTime = startLocal.ToString("dd.MM.yyyy HH:mm");
             ViewBag.DoctorName = appointment.Doctor.FullName;
             ViewBag.PatientName = $"{appointment.User.FirstName} {appointment.User.LastName}";
 
             return View("VideoCall");
+        }
+
+        private static string GenerateJaaSToken(
+            string appId, string apiKeyId, string privateKeyPem,
+            string roomName, string userId, string displayName, string userEmail,
+            bool isModerator)
+        {
+            using var rsa = RSA.Create();
+            rsa.ImportFromPem(privateKeyPem);
+
+            var securityKey = new RsaSecurityKey(rsa) { KeyId = apiKeyId };
+            var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.RsaSha256);
+
+            var now = DateTimeOffset.UtcNow;
+
+            var userContext = new Dictionary<string, object>
+            {
+                ["id"] = userId,
+                ["name"] = displayName,
+                ["email"] = userEmail,
+                ["avatar"] = "",
+                ["moderator"] = isModerator ? "true" : "false"
+            };
+
+            var featuresContext = new Dictionary<string, object>
+            {
+                ["livestreaming"] = "false",
+                ["recording"] = "false",
+                ["transcription"] = "false",
+                ["outbound-call"] = "false"
+            };
+
+            var payload = new JwtPayload
+            {
+                ["iss"] = "chat",
+                ["aud"] = "jitsi",
+                ["sub"] = appId,
+                ["room"] = "*",
+                ["iat"] = now.ToUnixTimeSeconds(),
+                ["nbf"] = now.AddSeconds(-10).ToUnixTimeSeconds(),
+                ["exp"] = now.AddHours(2).ToUnixTimeSeconds(),
+                ["context"] = new Dictionary<string, object>
+                {
+                    ["user"] = userContext,
+                    ["features"] = featuresContext
+                }
+            };
+
+            var header = new JwtHeader(credentials);
+            return new JwtSecurityTokenHandler().WriteToken(new JwtSecurityToken(header, payload));
         }
     }
 }

@@ -53,17 +53,17 @@ app.Use(async (context, next) =>
     context.Response.Headers.Append("X-Frame-Options", "DENY");
     context.Response.Headers.Append("Referrer-Policy", "strict-origin-when-cross-origin");
     context.Response.Headers.Append("Permissions-Policy",
-        "camera=(self \"https://meet.jit.si\"), " +
-        "microphone=(self \"https://meet.jit.si\"), " +
+        "camera=(self \"https://8x8.vc\"), " +
+        "microphone=(self \"https://8x8.vc\"), " +
         "geolocation=()");
     context.Response.Headers.Append("Content-Security-Policy",
         "default-src 'self'; " +
-        "script-src 'self' 'unsafe-inline' https://meet.jit.si; " +
+        "script-src 'self' 'unsafe-inline' https://8x8.vc; " +
         "style-src 'self' cdn.jsdelivr.net 'unsafe-inline'; " +
         "font-src 'self' cdn.jsdelivr.net; " +
-        "img-src 'self' data: https://meet.jit.si; " +
-        "connect-src 'self' https://meet.jit.si wss://meet.jit.si; " +
-        "frame-src https://meet.jit.si; " +
+        "img-src 'self' data: https://*.8x8.vc; " +
+        "connect-src 'self' https://*.8x8.vc wss://*.8x8.vc; " +
+        "frame-src https://8x8.vc; " +
         "frame-ancestors 'none';");
     await next();
 });

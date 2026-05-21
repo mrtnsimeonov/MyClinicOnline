@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MyClinicOnline.Data;
 using MyClinicOnline.Models;
+using MyClinicOnline.Services;
 using MyClinicOnline.Services; // Ensure you have the Email Service from previous steps
 
 namespace MyClinicOnline.Controllers
@@ -96,7 +97,7 @@ namespace MyClinicOnline.Controllers
         public async Task<IActionResult> UpcomingOnline()
         {
             var doctorId = int.Parse(User.FindFirst("UserId")!.Value);
-            var now = DateTime.Now;
+            var now = LocalClock.Now;
             var soon = now.AddMinutes(5);
 
 

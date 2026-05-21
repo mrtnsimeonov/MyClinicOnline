@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MyClinicOnline.Data;
 using MyClinicOnline.Models;
+using MyClinicOnline.Services;
 
 namespace MyClinicOnline.Controllers
 {
@@ -48,7 +49,7 @@ namespace MyClinicOnline.Controllers
                 return View("EnterCode");
             }
 
-            var now = DateTime.Now;
+            var now = LocalClock.Now;
             var start = appointment.TimeSlot.StartTime;
 
             if (now < start.AddMinutes(-10))

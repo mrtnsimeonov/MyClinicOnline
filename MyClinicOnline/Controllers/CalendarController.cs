@@ -27,7 +27,7 @@ namespace MyClinicOnline.Controllers
 
             if (doctor == null) return NotFound();
 
-            var today = DateTime.Today;
+            var today = LocalClock.Today;
             var start = new DateTime(today.Year, today.Month, 1);
 
             var selectedMonth = (year.HasValue && month.HasValue)
@@ -135,6 +135,20 @@ namespace MyClinicOnline.Controllers
                 }
 
                 await _emailService.SendEmailAsync(user.Email, subject, body);
+
+                if (type == ConsultationType.Online && meetingCode != null && slot.Doctor?.Email != null)
+                {
+                    var joinLink = $"{Request.Scheme}://{Request.Host}/Video/Join?code={meetingCode}";
+                    await _emailService.SendEmailAsync(
+                        slot.Doctor.Email,
+                        "Нова онлайн консултация",
+                        $"Д-р {slot.Doctor.FullName},\n\n" +
+                        $"Имате нова онлайн консултация с {user.FirstName} {user.LastName} " +
+                        $"за {slot.StartTime:dd.MM.yyyy} в {slot.StartTime:HH:mm} ч.\n\n" +
+                        $"Код за среща: {meetingCode}\n\n" +
+                        $"Влезте в срещата чрез линка:\n{joinLink}\n\n" +
+                        $"Можете също да влезете от Вашия график в сайта.");
+                }
             }
             catch (Exception ex)
             {

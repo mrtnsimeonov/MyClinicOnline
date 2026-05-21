@@ -2,8 +2,8 @@
 using Microsoft.EntityFrameworkCore;
 using MyClinicOnline.Data;
 using MyClinicOnline.Models;
-using MyClinicOnline.ViewModels;
 using MyClinicOnline.Services;
+using MyClinicOnline.ViewModels;
 
 namespace MyClinicOnline.Controllers
 {
@@ -122,7 +122,7 @@ namespace MyClinicOnline.Controllers
                     SlotId = a.TimeSlotId,
                     DoctorName = a.Doctor.FullName,
                     DateTime = a.TimeSlot.StartTime,
-                    IsPast = a.TimeSlot.StartTime < DateTime.Now,
+                    IsPast = a.TimeSlot.StartTime < LocalClock.Now,
                     ConsultationType = a.ConsultationType,
                     MeetingCode = a.MeetingCode
                 })

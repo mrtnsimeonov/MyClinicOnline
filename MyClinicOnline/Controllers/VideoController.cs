@@ -39,6 +39,13 @@ namespace MyClinicOnline.Controllers
                 return View("EnterCode");
             }
 
+            // Guard: related entities must be loaded
+            if (appointment.TimeSlot == null || appointment.Doctor == null || appointment.User == null)
+            {
+                ViewBag.Error = "Срещата не може да бъде заредена. Моля, свържете се с поддръжката.";
+                return View("EnterCode");
+            }
+
             var userIdClaim = User.FindFirst("UserId")?.Value;
             if (userIdClaim == null) return RedirectToAction("Login", "Account");
             int currentUserId = int.Parse(userIdClaim);
@@ -74,23 +81,25 @@ namespace MyClinicOnline.Controllers
                 return View("EnterCode");
             }
 
-            var appId = _configuration["JitsiSettings:AppId"]!;
-            var apiKeyId = _configuration["JitsiSettings:ApiKeyId"]!;
-            var privateKeyPem = _configuration["JitsiSettings:PrivateKey"]!;
+            // Read JaaS config — same for both patient and doctor
+            var appId = _configuration["JitsiSettings:AppId"] ?? string.Empty;
+            var apiKeyId = _configuration["JitsiSettings:ApiKeyId"] ?? string.Empty;
+            var privateKeyPem = _configuration["JitsiSettings:PrivateKey"] ?? string.Empty;
 
             var roomName = $"mco-{appointment.Id}-{appointment.MeetingCode}".ToLower();
 
+            // Build identity info — doctor path mirrors patient path exactly
             string displayName, userEmail, userId;
             if (isDoctor)
             {
                 displayName = $"Д-р {appointment.Doctor.FullName}";
-                userEmail = appointment.Doctor.Email;
+                userEmail = appointment.Doctor.Email ?? string.Empty;
                 userId = $"doctor-{appointment.DoctorId}";
             }
             else
             {
                 displayName = $"{appointment.User.FirstName} {appointment.User.LastName}";
-                userEmail = appointment.User.Email;
+                userEmail = appointment.User.Email ?? string.Empty;
                 userId = $"patient-{appointment.UserId}";
             }
 
@@ -102,7 +111,7 @@ namespace MyClinicOnline.Controllers
             ViewBag.JwtToken = jwtToken;
             ViewBag.DisplayName = displayName;
             ViewBag.AppointmentTime = startLocal.ToString("dd.MM.yyyy HH:mm");
-            ViewBag.DoctorName = appointment.Doctor.FullName;
+            ViewBag.DoctorName = appointment.Doctor.FullName ?? string.Empty;
             ViewBag.PatientName = $"{appointment.User.FirstName} {appointment.User.LastName}";
 
             return View("VideoCall");

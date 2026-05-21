@@ -149,6 +149,15 @@ namespace MyClinicOnline.Controllers
                         $"Влезте в срещата чрез линка:\n{joinLink}\n\n" +
                         $"Можете също да влезете от Вашия график в сайта.");
                 }
+                else if (type == ConsultationType.InPerson && slot.Doctor?.Email != null)
+                {
+                    await _emailService.SendEmailAsync(
+                        slot.Doctor.Email,
+                        "Нов записан час",
+                        $"Д-р {slot.Doctor.FullName},\n\n" +
+                        $"Имате нов записан час с {user.FirstName} {user.LastName} " +
+                        $"за {slot.StartTime:dd.MM.yyyy} в {slot.StartTime:HH:mm} ч.");
+                }
             }
             catch (Exception ex)
             {

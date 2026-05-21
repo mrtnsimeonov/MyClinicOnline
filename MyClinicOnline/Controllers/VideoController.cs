@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MyClinicOnline.Data;
 using MyClinicOnline.Models;
-using MyClinicOnline.Services;
 
 namespace MyClinicOnline.Controllers
 {
@@ -49,17 +48,21 @@ namespace MyClinicOnline.Controllers
                 return View("EnterCode");
             }
 
-            var now = LocalClock.Now;
-            var start = appointment.TimeSlot.StartTime;
+            var zone = TimeZoneInfo.FindSystemTimeZoneById(
+                OperatingSystem.IsWindows() ? "FLE Standard Time" : "Europe/Sofia");
 
-            if (now < start.AddMinutes(-10))
+            var startLocal = DateTime.SpecifyKind(appointment.TimeSlot.StartTime, DateTimeKind.Unspecified);
+            var startUtc = TimeZoneInfo.ConvertTimeToUtc(startLocal, zone);
+            var nowUtc = DateTime.UtcNow;
+
+            if (nowUtc < startUtc.AddMinutes(-10))
             {
-                var minutesLeft = (int)(start - now).TotalMinutes;
-                ViewBag.Error = $"Срещата не е започнала още. Влезте {minutesLeft} минути преди {start:HH:mm}.";
+                var minutesLeft = (int)(startUtc - nowUtc).TotalMinutes;
+                ViewBag.Error = $"Срещата не е започнала още. Влезте {minutesLeft} минути преди {startLocal:HH:mm}.";
                 return View("EnterCode");
             }
 
-            if (now > start.AddMinutes(60))
+            if (nowUtc > startUtc.AddMinutes(60))
             {
                 ViewBag.Error = "Часът е изтекъл. Тази консултация вече не е достъпна.";
                 return View("EnterCode");
@@ -71,7 +74,7 @@ namespace MyClinicOnline.Controllers
             ViewBag.DisplayName = isDoctor
                 ? $"Д-р {appointment.Doctor.FullName}"
                 : $"{appointment.User.FirstName} {appointment.User.LastName}";
-            ViewBag.AppointmentTime = start.ToString("dd.MM.yyyy HH:mm");
+            ViewBag.AppointmentTime = startLocal.ToString("dd.MM.yyyy HH:mm");
             ViewBag.DoctorName = appointment.Doctor.FullName;
             ViewBag.PatientName = $"{appointment.User.FirstName} {appointment.User.LastName}";
 

@@ -96,6 +96,16 @@ namespace MyClinicOnline.Controllers
                 // SEND EMAIL
                 await _emailService.SendEmailAsync(user.Email, "Записан час", $"Успешно записахте час при Д-р {slot.Doctor.FullName}.");
 
+                if (slot.Doctor?.Email != null)
+                {
+                    await _emailService.SendEmailAsync(
+                        slot.Doctor.Email,
+                        "Нов записан час",
+                        $"Д-р {slot.Doctor.FullName},\n\n" +
+                        $"Имате нов записан час с {user.FirstName} {user.LastName} " +
+                        $"за {slot.StartTime:dd.MM.yyyy} в {slot.StartTime:HH:mm} ч.");
+                }
+
                 // Return SUCCESS to the JavaScript
                 return Json(new { success = true });
             }
